@@ -42,19 +42,20 @@
 
         const { useState } = React;
 
-        // --- CONFIGURAZIONE FIREBASE (INSERISCI I TUOI DATI QUI) ---
-        const firebaseConfig = {
-            apiKey: "TUO_API_KEY",
-            authDomain: "TUO_PROJECT_ID.firebaseapp.com",
-            projectId: "TUO_PROJECT_ID",
-            storageBucket: "TUO_PROJECT_ID.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
-        };
+        // --- CONFIGURAZIONE FIREBASE
+          const firebaseConfig = {
+            apiKey: "AIzaSyCxQxrkKxLFUtH6JPslO892DAY8aX6pDww",
+            authDomain: "finlingo-test-8ed2a.firebaseapp.com",
+            projectId: "finlingo-test-8ed2a",
+            storageBucket: "finlingo-test-8ed2a.firebasestorage.app",
+            messagingSenderId: "427659618796",
+            appId: "1:427659618796:web:d0d8d02400c90a6789f8c9",
+            measurementId: "G-DDF0V338LL"
+          };
 
         let db;
         try {
-            if (firebaseConfig.apiKey !== "TUO_API_KEY") {
+            if (firebaseConfig.apiKey !== "AIzaSyCxQxrkKxLFUtH6JPslO892DAY8aX6pDww") {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
             }
@@ -76,7 +77,7 @@
 
         // --- NUOVO COMPONENTE LOGO (SOLO IMMAGINE) ---
         const Logo = ({ large = false }) => {
-            const logoSrc = "Gemini_Generated_Image_lm6hgslm6hgslm6h.png";
+            const logoSrc = "logo.png";
             
             if (large) {
                 return (
