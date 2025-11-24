@@ -1,21 +1,17 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ToroAcademy - Test Finanza</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- React UMD -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 
-  <!-- Babel (per JSX in-browser) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Firebase v8 (UMD) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
@@ -24,17 +20,27 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     .font-logo { font-family: 'Nunito', sans-serif; }
-    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-    .logo-float { animation: float 3s ease-in-out infinite; }
+
+    /* Animazione per il logo */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0px); }
+    }
+    .logo-float {
+      animation: float 3s ease-in-out infinite;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
+
   <div id="root"></div>
 
   <script type="text/babel">
+    // Using React from UMD build
     const { useState, useEffect } = React;
 
-    // ---------- CONFIG FIREBASE ----------
+    // --- CONFIGURAZIONE FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyCxQxrkKxLFUtH6JPslO892DAY8aX6pDww",
       authDomain: "finlingo-test-8ed2a.firebaseapp.com",
@@ -45,52 +51,65 @@
       measurementId: "G-DDF0V338LL"
     };
 
-    // Firestore DB (v8 global)
-    let db = null;
-
-    // ---------- LOCAL AUTOSAVE helpers ----------
-    const AUTOSAVE_KEY = 'toroacademy_quiz_progress_v2';
-    function saveProgressLocal(progress) {
-      try {
-        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(progress));
-      } catch (e) {
-        console.error('Errore salvataggio localStorage', e);
-      }
+    // Local helpers names used in the component (ensure these match the functions you already had)
+    const AUTOSAVE_KEY = 'toroacademy_quiz_progress';
+    function saveProgressLocal(obj) {
+      try { localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(obj)); } catch (e) { console.warn('local save failed', e); }
     }
     function loadProgressLocal() {
-      try {
-        const raw = localStorage.getItem(AUTOSAVE_KEY);
-        return raw ? JSON.parse(raw) : null;
-      } catch (e) {
-        console.error('Errore caricamento localStorage', e);
-        return null;
-      }
+      try { const v = localStorage.getItem(AUTOSAVE_KEY); return v ? JSON.parse(v) : null; } catch (e) { console.warn('local load failed', e); return null; }
     }
     function clearProgressLocal() {
-      try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) { console.error(e); }
+      try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) { console.warn('local clear failed', e); }
     }
 
-    // ---------- ICON COMPONENTS ----------
-    const IconBase = ({ children, size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-           className={className}>{children}</svg>
-    );
-    const ArrowRight = (props) => <IconBase {...props}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></IconBase>;
-    const CheckCircle = (props) => <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m9 11 3 3L22 4" /></IconBase>;
-    const XCircle = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></IconBase>;
-    const Target = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></IconBase>;
+    let db = null;
 
-    // ---------- LOGO ----------
-    const Logo = ({ large=false }) => {
+    // --- COMPONENTI ICONE ---
+    const IconBase = ({ children, size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {children}
+      </svg>
+    );
+
+    const ArrowRight = (props) => (
+      <IconBase {...props}>
+        <path d="M5 12h14" />
+        <path d="m12 5 7 7-7 7" />
+      </IconBase>
+    );
+    const CheckCircle = (props) => (
+      <IconBase {...props}>
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+        <path d="m9 11 3 3L22 4" />
+      </IconBase>
+    );
+    const XCircle = (props) => (
+      <IconBase {...props}>
+        <circle cx="12" cy="12" r="10" />
+        <path d="m15 9-6 6" />
+        <path d="m9 9 6 6" />
+      </IconBase>
+    );
+    const Target = (props) => (
+      <IconBase {...props}>
+        <circle cx="12" cy="12" r="10" />
+        <circle cx="12" cy="12" r="6" />
+        <circle cx="12" cy="12" r="2" />
+      </IconBase>
+    );
+
+    // --- LOGO ---
+    const Logo = ({ large = false }) => {
       const logoSrc = "logo.png";
       if (large) {
         return (
-          <div className="flex justify-center w-full mb-8">
+          <div className="flex justify-center w-full mb-8 animate-in fade-in zoom-in duration-700">
             <div className="w-48 h-48 md:w-64 md:h-64 relative logo-float filter drop-shadow-2xl">
               <img src={logoSrc} alt="Toro Logo" className="w-full h-full object-contain"
-                   onError={(e)=>{ e.target.onerror=null; e.target.style.display='none'; const f=e.target.nextSibling; if(f) f.style.display='flex'; }} />
-              <div className="hidden w-full h-full bg-emerald-100 rounded-full items-center justify-center text-8xl border-4 border-emerald-500 shadow-xl" style={{display:'none'}}>🐮</div>
+                   onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; const f = e.target.nextSibling; if (f) f.style.display = 'flex'; }} />
+              <div className="hidden w-full h-full bg-emerald-100 rounded-full items-center justify-center text-8xl border-4 border-emerald-500 shadow-xl" style={{display: 'none'}}>🐮</div>
             </div>
           </div>
         );
@@ -98,14 +117,15 @@
       return (
         <div className="fixed top-4 left-4 z-50 transition-all duration-300 hover:scale-110 cursor-pointer">
           <div className="w-16 h-16 md:w-20 md:h-20 relative filter drop-shadow-lg">
-            <img src={logoSrc} alt="Toro Logo" className="w-full h-full object-contain" onError={(e)=>{ e.target.onerror=null; e.target.style.display='none'; const f=e.target.nextSibling; if(f) f.style.display='flex'; }} />
-            <div className="hidden w-full h-full bg-emerald-100 rounded-full items-center justify-center text-3xl border-2 border-emerald-500" style={{display:'none'}}>🐮</div>
+            <img src={logoSrc} alt="Toro Logo" className="w-full h-full object-contain"
+                 onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; const f = e.target.nextSibling; if (f) f.style.display = 'flex'; }} />
+            <div className="hidden w-full h-full bg-emerald-100 rounded-full items-center justify-center text-3xl border-2 border-emerald-500" style={{display: 'none'}}>🐮</div>
           </div>
         </div>
       );
     };
 
-    // ---------- QUESTIONS ----------
+    // --- DOMANDE ---
     const questions = [
       { id: 1, question: "Cos'è l'interesse composto?", options: ["L'interesse che paghi alla banca", "L'interesse sul solo capitale iniziale", "L'interesse su capitale + interessi maturati", "Una tassa governativa"], correct: 2, explanation: "È l'effetto 'palla di neve': guadagni interessi anche sugli interessi passati." },
       { id: 2, question: "Cosa rappresenta un'azione (Stock)?", options: ["Un prestito allo Stato", "Una quota di proprietà di un'azienda", "Un'assicurazione sulla vita", "Una valuta digitale"], correct: 1, explanation: "Diventi socio dell'azienda partecipando a profitti e rischi." },
@@ -134,6 +154,9 @@
       const [isSaving, setIsSaving] = useState(false);
       const [userAnswers, setUserAnswers] = useState({});
       const [formData, setFormData] = useState({ interestedInInvesting: null, interestedInApp: null, email: '' });
+
+      // compute current question (safe to compute at top-level)
+      const question = questions[currentQuestionIndex];
 
       // Create or load sessionId & init firebase, restore saved progress
       useEffect(() => {
@@ -195,12 +218,10 @@
                   if (data.answers) {
                     // merge remote answers (remote priority)
                     setUserAnswers((prev) => ({ ...prev, ...data.answers }));
-                    // derive score from saved correct flags if present else keep local
-                    // Also derive current index as next unanswered question
+                    // derive current index as next unanswered question
                     const answeredKeys = Object.keys(data.answers || {}).filter(k => k.startsWith('question'));
                     if (answeredKeys.length > 0) {
                       const lastAnsweredQ = Math.max(...answeredKeys.map(k => parseInt(k.replace('question',''),10)));
-                      // set next index to lastAnsweredQ (0-based correction)
                       const nextIndex = Math.min(lastAnsweredQ, questions.length);
                       setCurrentQuestionIndex(nextIndex);
                       setCurrentStep('quiz');
@@ -221,9 +242,7 @@
 
       // ---------- HELPERS: autosave to Firestore + local ----------
       async function autosaveAnswerToServer(sid, answerObj) {
-        // answerObj: e.g. { question1: "text", correct1: true }
         if (!sid) return;
-        // prepare payload
         const payload = {
           answers: answerObj,
           lastUpdate: firebase && firebase.firestore ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
@@ -378,6 +397,24 @@
         setCurrentStep('results');
       };
 
+      // ====== CRITICAL FIX: effect moved to top-level to avoid conditional hooks ======
+      // this effect ensures that when a question has a saved answer we show it as selected/checked
+      useEffect(() => {
+        if (!question) return;
+        const saved = userAnswers[`question${question.id}`];
+        if (saved) {
+          const idx = question.options.indexOf(saved);
+          if (idx !== -1) {
+            setSelectedOption(idx);
+            setIsAnswerChecked(true);
+            return;
+          }
+        }
+        // if no saved answer, reset selection for this question
+        setSelectedOption(null);
+        setIsAnswerChecked(false);
+      }, [currentQuestionIndex, userAnswers]); // safe dependencies
+
       // ---------- RENDER ----------
 
       if (isLoading) {
@@ -422,21 +459,7 @@
 
       // QUIZ
       if (currentStep === 'quiz') {
-        const question = questions[currentQuestionIndex];
         const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
-
-        // if this question already answered in userAnswers, show selected
-        useEffect(() => {
-          const saved = userAnswers[`question${question.id}`];
-          if (saved) {
-            const idx = question.options.indexOf(saved);
-            if (idx !== -1) {
-              setSelectedOption(idx);
-              setIsAnswerChecked(true);
-            }
-          }
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [currentQuestionIndex]);
 
         return (
           <div className="min-h-screen bg-slate-50 flex flex-col items-center py-10 px-4 relative">
