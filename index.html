@@ -41,6 +41,7 @@
     const { useState, useEffect } = React;
 
     // --- CONFIGURAZIONE FIREBASE ---
+    // Ricorda di mantenere questa configurazione aggiornata se la cambi!
     const firebaseConfig = {
       apiKey: "AIzaSyCxQxrkKxLFUtH6JPslO892DAY8aX6pDww",
       authDomain: "finlingo-test-8ed2a.firebaseapp.com",
@@ -55,7 +56,7 @@
 
     function initFirebase() {
       if (typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
-        console.warn('Firebase non inizializzato. Assicurati che gli script UMD siano caricati.');
+        console.warn('Firebase non inizializzato.');
         db = null;
         return;
       }
@@ -70,7 +71,36 @@
       }
     }
 
-    // --- COMPONENTI ICONE ---
+    // --- FUNZIONE PER AUTOSAVE ---
+    const AUTOSAVE_KEY = 'toroacademy_quiz_progress';
+
+    const saveProgress = (progress) => {
+        try {
+            localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(progress));
+        } catch (e) {
+            console.error("Errore nel salvataggio in localStorage", e);
+        }
+    };
+
+    const loadProgress = () => {
+        try {
+            const savedData = localStorage.getItem(AUTOSAVE_KEY);
+            return savedData ? JSON.parse(savedData) : null;
+        } catch (e) {
+            console.error("Errore nel caricamento da localStorage", e);
+            return null;
+        }
+    };
+
+    const clearProgress = () => {
+        try {
+            localStorage.removeItem(AUTOSAVE_KEY);
+        } catch (e) {
+             console.error("Errore nel reset di localStorage", e);
+        }
+    };
+    
+    // --- COMPONENTI ICONE --- (Non modificati)
     const IconBase = ({ children, size = 24, className = "" }) => (
       <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none"
            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -105,7 +135,7 @@
       </IconBase>
     );
 
-    // --- LOGO COMPONENT ---
+    // --- LOGO COMPONENT --- (Non modificato)
     const Logo = ({ large = false }) => {
       const logoSrc = "logo.png"; // metti logo.png nella root del repo
 
@@ -156,7 +186,7 @@
       return large ? largeMarkup : smallMarkup;
     };
 
-    // --- DOMANDE DEL QUIZ ---
+    // --- DOMANDE DEL QUIZ --- (Non modificate)
     const questions = [
       { id: 1, question: "Cos'è l'interesse composto?", options: ["L'interesse che paghi alla banca", "L'interesse sul solo capitale iniziale", "L'interesse su capitale + interessi maturati", "Una tassa governativa"], correct: 2, explanation: "È l'effetto 'palla di neve': guadagni interessi anche sugli interessi passati." },
       { id: 2, question: "Cosa rappresenta un'azione (Stock)?", options: ["Un prestito allo Stato", "Una quota di proprietà di un'azienda", "Un'assicurazione sulla vita", "Una valuta digitale"], correct: 1, explanation: "Diventi socio dell'azienda partecipando a profitti e rischi." },
@@ -171,21 +201,48 @@
     ];
 
     function App() {
+      // Imposta uno stato di caricamento per evitare sfarfallii iniziali
+      const [isLoading, setIsLoading] = useState(true);
+
       const [currentStep, setCurrentStep] = useState('intro');
       const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
       const [score, setScore] = useState(0);
       const [selectedOption, setSelectedOption] = useState(null);
       const [isAnswerChecked, setIsAnswerChecked] = useState(false);
       const [isSaving, setIsSaving] = useState(false);
-
-      // 🔥 AGGIUNTO: Stato per collezionare le risposte
       const [userAnswers, setUserAnswers] = useState({});
-
       const [formData, setFormData] = useState({ interestedInInvesting: null, interestedInApp: null, email: '' });
 
+      // 🔥 NUOVO: Logica di caricamento dei progressi
       useEffect(() => {
         initFirebase();
+        
+        const savedProgress = loadProgress();
+        if (savedProgress) {
+            console.log("Progressi trovati, ripristino lo stato.");
+            // Assicurati che il quiz fosse iniziato per non forzare la vista 'quiz' se hanno solo visitato l'intro
+            if (savedProgress.currentQuestionIndex > 0 || Object.keys(savedProgress.userAnswers).length > 0) {
+                setCurrentStep('quiz');
+            } else if (savedProgress.currentStep === 'survey') {
+                setCurrentStep('survey');
+            }
+            setCurrentQuestionIndex(savedProgress.currentQuestionIndex);
+            setScore(savedProgress.score);
+            setUserAnswers(savedProgress.userAnswers);
+        }
+        setIsLoading(false);
       }, []);
+      
+      // 🔥 NUOVO: Funzione per salvare i progressi
+      const saveCurrentState = (newAnswers = userAnswers, newScore = score, newIndex = currentQuestionIndex) => {
+        saveProgress({
+            currentStep: currentStep,
+            currentQuestionIndex: newIndex,
+            score: newScore,
+            userAnswers: newAnswers,
+        });
+      };
+
 
       const handleOptionSelect = (index) => {
         if (isAnswerChecked) return;
@@ -193,26 +250,37 @@
         setIsAnswerChecked(true);
 
         const currentQuestion = questions[currentQuestionIndex];
-        
-        // 🔥 MODIFICATO: Salva il testo della risposta e se è corretta
-        setUserAnswers(prevAnswers => ({
-            ...prevAnswers,
+        let newScore = score;
+
+        const newAnswers = {
+            ...userAnswers,
             [`question${currentQuestion.id}`]: currentQuestion.options[index],
             [`correct${currentQuestion.id}`]: index === currentQuestion.correct,
-        }));
+        };
+        setUserAnswers(newAnswers);
 
         if (index === currentQuestion.correct) {
-          setScore((s) => s + 1);
+          newScore = score + 1;
+          setScore(newScore);
         }
+        
+        // 🔥 AUTOSAVE DOPO AVER RISPOSTO
+        saveCurrentState(newAnswers, newScore, currentQuestionIndex);
       };
 
       const handleNextQuestion = () => {
         setSelectedOption(null);
         setIsAnswerChecked(false);
-        if (currentQuestionIndex < questions.length - 1) {
-          setCurrentQuestionIndex((i) => i + 1);
+        const nextIndex = currentQuestionIndex + 1;
+        
+        if (nextIndex < questions.length) {
+          setCurrentQuestionIndex(nextIndex);
+          // AUTOSAVE dopo aver avanzato alla domanda successiva
+          saveCurrentState(userAnswers, score, nextIndex);
         } else {
           setCurrentStep('survey');
+          // AUTOSAVE: salva che è arrivato al survey
+          saveProgress({currentStep: 'survey', currentQuestionIndex: nextIndex, score: score, userAnswers: userAnswers});
         }
       };
 
@@ -220,7 +288,6 @@
         e.preventDefault();
         setIsSaving(true);
         
-        // 🔥 MODIFICATO: Include userAnswers nell'oggetto da salvare
         const resultData = { 
             ...formData, 
             score, 
@@ -237,7 +304,7 @@
             console.error('Salvataggio su Firebase fallito:', err);
           }
         } else {
-          // fallback: salva in localStorage (utile per debug/test)
+          // fallback: salva in localStorage
           try {
             const saved = JSON.parse(localStorage.getItem('toro_leads') || '[]');
             saved.push(resultData);
@@ -247,13 +314,23 @@
             console.warn('Local save fallito', err);
           }
         }
+        
+        // 🔥 PULISCE I PROGRESSI SALVATI QUANDO IL QUIZ È FINITO
+        clearProgress();
 
         setIsSaving(false);
         setCurrentStep('results');
       };
+      
+      // Gestisce lo stato di caricamento iniziale
+      if (isLoading) {
+          return <div className="min-h-screen flex items-center justify-center">Caricamento...</div>;
+      }
 
       // --- INTRO ---
       if (currentStep === 'intro') {
+        const savedProgress = loadProgress();
+
         return (
           <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
             <div className="z-20 w-full max-w-2xl">
@@ -268,9 +345,16 @@
                 <p>La finanza personale in Italia è un tabù. Molti giovani lasciano i risparmi a perdere valore.</p>
                 <p className="text-emerald-300">Scopri il tuo livello in 3 minuti.</p>
               </div>
+
+              {savedProgress ? (
+                  <div className="mb-4 p-4 bg-blue-500/20 text-blue-200 rounded-xl border border-blue-500/50 text-center font-medium">
+                      Hai dei progressi salvati (Domanda {savedProgress.currentQuestionIndex + 1}).
+                  </div>
+              ) : null}
+
               <button onClick={() => setCurrentStep('quiz')}
                       className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xl py-5 px-8 rounded-2xl transition-all transform hover:scale-[1.02] hover:shadow-emerald-500/50 shadow-lg flex items-center justify-center gap-3 border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1">
-                INIZIA ORA <ArrowRight size={20} />
+                {savedProgress ? "RIPRENDI IL QUIZ" : "INIZIA ORA"} <ArrowRight size={20} />
               </button>
             </div>
 
@@ -286,6 +370,24 @@
       if (currentStep === 'quiz') {
         const question = questions[currentQuestionIndex];
         const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+
+        // Controlla se questa domanda è già stata risposta nel salvataggio
+        const isQuestionPreviouslyAnswered = userAnswers[`question${question.id}`] !== undefined;
+        let initialSelectedOption = null;
+
+        if (isQuestionPreviouslyAnswered && !isAnswerChecked) {
+            // Cerchiamo l'indice della risposta salvata
+            const savedAnswerText = userAnswers[`question${question.id}`];
+            initialSelectedOption = question.options.indexOf(savedAnswerText);
+            
+            // Se la domanda era già stata risposta in una sessione precedente, la mostriamo come "checked"
+            if (initialSelectedOption !== -1) {
+                setTimeout(() => {
+                    setSelectedOption(initialSelectedOption);
+                    setIsAnswerChecked(true);
+                }, 0); // Lo eseguiamo in un timeout per garantire che lo stato sia aggiornato
+            }
+        }
 
         return (
           <div className="min-h-screen bg-slate-50 flex flex-col items-center py-10 px-4 relative">
@@ -308,11 +410,16 @@
                 <div className="space-y-3">
                   {question.options.map((option, idx) => {
                     let style = "w-full text-left p-4 rounded-2xl border-2 transition-all font-bold text-lg flex justify-between items-center cursor-pointer ";
+                    
+                    // Controlla se l'utente ha risposto in questa sessione O se è stata caricata la risposta dal localStorage
+                    const isSelected = isAnswerChecked && idx === selectedOption;
+                    const isCorrect = isAnswerChecked && idx === question.correct;
+                    
                     if (!isAnswerChecked) {
                       style += "border-slate-200 hover:bg-slate-50 text-slate-600 hover:border-slate-300 active:border-b-0 active:translate-y-0.5 border-b-4";
-                    } else if (idx === question.correct) {
+                    } else if (isCorrect) {
                       style += "border-emerald-500 bg-emerald-50 text-emerald-700 border-b-4";
-                    } else if (idx === selectedOption) {
+                    } else if (isSelected) {
                       style += "border-red-500 bg-red-50 text-red-700 border-b-4";
                     } else {
                       style += "border-slate-100 text-slate-300 border-b-2";
@@ -324,8 +431,8 @@
                               onClick={() => handleOptionSelect(idx)}
                               className={style}>
                         <span>{option}</span>
-                        {isAnswerChecked && idx === question.correct && <CheckCircle size={20} className="text-emerald-500" />}
-                        {isAnswerChecked && idx === selectedOption && idx !== question.correct && <XCircle size={20} className="text-red-500" />}
+                        {isAnswerChecked && isCorrect && <CheckCircle size={20} className="text-emerald-500" />}
+                        {isAnswerChecked && isSelected && !isCorrect && <XCircle size={20} className="text-red-500" />}
                       </button>
                     );
                   })}
@@ -353,7 +460,7 @@
         );
       }
 
-      // --- SURVEY ---
+      // --- SURVEY --- (Non modificato nella logica di visualizzazione)
       if (currentStep === 'survey') {
         return (
           <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
@@ -420,7 +527,7 @@
         );
       }
 
-      // --- RISULTATI ---
+      // --- RISULTATI --- (Non modificato)
       if (currentStep === 'results') {
         const nationalAvg = 4;
         const isGood = score > nationalAvg;
