@@ -53,9 +53,7 @@
 
     let db = null;
 
-    // 🔥🔥🔥 FUNZIONE AGGIORNATA PER FIREBASE V8 (UMD) 🔥🔥🔥
     function initFirebase() {
-      // Controlla se le variabili globali Firebase sono disponibili (caricate dagli script)
       if (typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
         console.warn('Firebase non inizializzato. Assicurati che gli script UMD siano caricati.');
         db = null;
@@ -64,7 +62,6 @@
 
       try {
         const app = firebase.initializeApp(firebaseConfig);
-        // Inizializza Firestore usando la sintassi v8 (non modulare)
         db = firebase.firestore();
         console.info('Firebase inizializzato correttamente (v8 UMD).');
       } catch (err) {
@@ -181,10 +178,12 @@
       const [isAnswerChecked, setIsAnswerChecked] = useState(false);
       const [isSaving, setIsSaving] = useState(false);
 
+      // 🔥 AGGIUNTO: Stato per collezionare le risposte
+      const [userAnswers, setUserAnswers] = useState({});
+
       const [formData, setFormData] = useState({ interestedInInvesting: null, interestedInApp: null, email: '' });
 
       useEffect(() => {
-        // inizializza firebase in background (se possibile)
         initFirebase();
       }, []);
 
@@ -192,7 +191,17 @@
         if (isAnswerChecked) return;
         setSelectedOption(index);
         setIsAnswerChecked(true);
-        if (index === questions[currentQuestionIndex].correct) {
+
+        const currentQuestion = questions[currentQuestionIndex];
+        
+        // 🔥 MODIFICATO: Salva il testo della risposta e se è corretta
+        setUserAnswers(prevAnswers => ({
+            ...prevAnswers,
+            [`question${currentQuestion.id}`]: currentQuestion.options[index],
+            [`correct${currentQuestion.id}`]: index === currentQuestion.correct,
+        }));
+
+        if (index === currentQuestion.correct) {
           setScore((s) => s + 1);
         }
       };
@@ -207,17 +216,23 @@
         }
       };
 
-      // 🔥🔥🔥 FUNZIONE AGGIORNATA PER SALVATAGGIO FIREBASE V8 (add) 🔥🔥🔥
       const handleSurveySubmit = async (e) => {
         e.preventDefault();
         setIsSaving(true);
-        const resultData = { ...formData, score, total: questions.length, date: new Date().toISOString() };
+        
+        // 🔥 MODIFICATO: Include userAnswers nell'oggetto da salvare
+        const resultData = { 
+            ...formData, 
+            score, 
+            total: questions.length, 
+            date: new Date().toISOString(),
+            ...userAnswers, 
+        };
 
         if (db) {
           try {
-            // Sintassi v8 per aggiungere un documento alla collezione "leads"
             await db.collection("leads").add(resultData);
-            console.log('Dati salvati su Firebase Firestore (v8).');
+            console.log('Dati salvati su Firebase Firestore (v8), incluse le risposte.');
           } catch (err) {
             console.error('Salvataggio su Firebase fallito:', err);
           }
