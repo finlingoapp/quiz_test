@@ -5,17 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ToroAcademy - Test Finanza</title>
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- React & ReactDOM (UMD) -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 
-  <!-- Babel (JSX compilation in-browser) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Fonts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -37,12 +36,11 @@
 
   <div id="root"></div>
 
-  <!-- App in a single HTML file, compiled through Babel -->
   <script type="text/babel">
     // Using React from UMD build
     const { useState, useEffect } = React;
 
-    // --- CONFIGURAZIONE FIREBASE (opzionale, non blocca se fallisce) ---
+    // --- CONFIGURAZIONE FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyCxQxrkKxLFUtH6JPslO892DAY8aX6pDww",
       authDomain: "finlingo-test-8ed2a.firebaseapp.com",
@@ -55,16 +53,20 @@
 
     let db = null;
 
-    // Try to dynamically import Firebase modules — if it fails, app continues without DB.
-    async function initFirebase() {
-      try {
-        const appMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
-        const firestoreMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
+    // 🔥🔥🔥 FUNZIONE AGGIORNATA PER FIREBASE V8 (UMD) 🔥🔥🔥
+    function initFirebase() {
+      // Controlla se le variabili globali Firebase sono disponibili (caricate dagli script)
+      if (typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
+        console.warn('Firebase non inizializzato. Assicurati che gli script UMD siano caricati.');
+        db = null;
+        return;
+      }
 
-        // initialize app
-        const app = appMod.initializeApp(firebaseConfig);
-        db = firestoreMod.getFirestore(app);
-        console.info('Firebase inizializzato correttamente.');
+      try {
+        const app = firebase.initializeApp(firebaseConfig);
+        // Inizializza Firestore usando la sintassi v8 (non modulare)
+        db = firebase.firestore();
+        console.info('Firebase inizializzato correttamente (v8 UMD).');
       } catch (err) {
         console.warn('Firebase non inizializzato (opzionale). Errore:', err);
         db = null;
@@ -205,6 +207,7 @@
         }
       };
 
+      // 🔥🔥🔥 FUNZIONE AGGIORNATA PER SALVATAGGIO FIREBASE V8 (add) 🔥🔥🔥
       const handleSurveySubmit = async (e) => {
         e.preventDefault();
         setIsSaving(true);
@@ -212,8 +215,9 @@
 
         if (db) {
           try {
-            const firestoreMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
-            await firestoreMod.addDoc(firestoreMod.collection(firestoreMod.getFirestore(), "leads"), resultData);
+            // Sintassi v8 per aggiungere un documento alla collezione "leads"
+            await db.collection("leads").add(resultData);
+            console.log('Dati salvati su Firebase Firestore (v8).');
           } catch (err) {
             console.error('Salvataggio su Firebase fallito:', err);
           }
@@ -223,6 +227,7 @@
             const saved = JSON.parse(localStorage.getItem('toro_leads') || '[]');
             saved.push(resultData);
             localStorage.setItem('toro_leads', JSON.stringify(saved));
+            console.warn('Salvataggio su localStorage di fallback.');
           } catch (err) {
             console.warn('Local save fallito', err);
           }
@@ -275,7 +280,7 @@
               {/* Progress bar */}
               <div className="w-full bg-slate-100 h-4">
                 <div className="bg-emerald-500 h-4 rounded-r-full transition-all duration-500 ease-out"
-                     style={{ width: `${progressPercent}%` }} />
+                      style={{ width: `${progressPercent}%` }} />
               </div>
 
               <div className="p-6 md:p-8">
@@ -383,10 +388,10 @@
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">La tua email migliore</label>
                   <input type="email" required
-                         className="w-full p-4 border-2 border-slate-200 rounded-xl font-medium focus:outline-none focus:border-blue-500 transition-colors"
-                         value={formData.email}
-                         onChange={(e) => setFormData({...formData, email: e.target.value})}
-                         placeholder="tuo@email.com" />
+                          className="w-full p-4 border-2 border-slate-200 rounded-xl font-medium focus:outline-none focus:border-blue-500 transition-colors"
+                          value={formData.email}
+                          onChange={(e) => setFormData({...formData, email: e.target.value})}
+                          placeholder="tuo@email.com" />
                 </div>
 
                 <button type="submit"
