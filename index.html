@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ToroAcademy - Test Finanza</title>
 
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- React UMD -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 
+  <!-- Babel (per JSX in-browser) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <!-- Firebase v8 (UMD) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
@@ -20,28 +24,17 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     .font-logo { font-family: 'Nunito', sans-serif; }
-
-    /* Animazione per il logo */
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-5px); }
-      100% { transform: translateY(0px); }
-    }
-    .logo-float {
-      animation: float 3s ease-in-out infinite;
-    }
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+    .logo-float { animation: float 3s ease-in-out infinite; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
-
   <div id="root"></div>
 
   <script type="text/babel">
-    // Using React from UMD build
     const { useState, useEffect } = React;
 
-    // --- CONFIGURAZIONE FIREBASE ---
-    // Ricorda di mantenere questa configurazione aggiornata se la cambi!
+    // ---------- CONFIG FIREBASE ----------
     const firebaseConfig = {
       apiKey: "AIzaSyCxQxrkKxLFUtH6JPslO892DAY8aX6pDww",
       authDomain: "finlingo-test-8ed2a.firebaseapp.com",
@@ -52,141 +45,67 @@
       measurementId: "G-DDF0V338LL"
     };
 
+    // Firestore DB (v8 global)
     let db = null;
 
-    function initFirebase() {
-      if (typeof firebase === 'undefined' || typeof firebase.firestore === 'undefined') {
-        console.warn('Firebase non inizializzato.');
-        db = null;
-        return;
-      }
-
+    // ---------- LOCAL AUTOSAVE helpers ----------
+    const AUTOSAVE_KEY = 'toroacademy_quiz_progress_v2';
+    function saveProgressLocal(progress) {
       try {
-        const app = firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-        console.info('Firebase inizializzato correttamente (v8 UMD).');
-      } catch (err) {
-        console.warn('Firebase non inizializzato (opzionale). Errore:', err);
-        db = null;
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(progress));
+      } catch (e) {
+        console.error('Errore salvataggio localStorage', e);
       }
     }
+    function loadProgressLocal() {
+      try {
+        const raw = localStorage.getItem(AUTOSAVE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        console.error('Errore caricamento localStorage', e);
+        return null;
+      }
+    }
+    function clearProgressLocal() {
+      try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) { console.error(e); }
+    }
 
-    // --- FUNZIONE PER AUTOSAVE ---
-    const AUTOSAVE_KEY = 'toroacademy_quiz_progress';
-
-    const saveProgress = (progress) => {
-        try {
-            localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(progress));
-        } catch (e) {
-            console.error("Errore nel salvataggio in localStorage", e);
-        }
-    };
-
-    const loadProgress = () => {
-        try {
-            const savedData = localStorage.getItem(AUTOSAVE_KEY);
-            return savedData ? JSON.parse(savedData) : null;
-        } catch (e) {
-            console.error("Errore nel caricamento da localStorage", e);
-            return null;
-        }
-    };
-
-    const clearProgress = () => {
-        try {
-            localStorage.removeItem(AUTOSAVE_KEY);
-        } catch (e) {
-             console.error("Errore nel reset di localStorage", e);
-        }
-    };
-    
-    // --- COMPONENTI ICONE --- (Non modificati)
+    // ---------- ICON COMPONENTS ----------
     const IconBase = ({ children, size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        {children}
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+           className={className}>{children}</svg>
     );
+    const ArrowRight = (props) => <IconBase {...props}><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></IconBase>;
+    const CheckCircle = (props) => <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m9 11 3 3L22 4" /></IconBase>;
+    const XCircle = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></IconBase>;
+    const Target = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></IconBase>;
 
-    const ArrowRight = (props) => (
-      <IconBase {...props}>
-        <path d="M5 12h14" />
-        <path d="m12 5 7 7-7 7" />
-      </IconBase>
-    );
-    const CheckCircle = (props) => (
-      <IconBase {...props}>
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-        <path d="m9 11 3 3L22 4" />
-      </IconBase>
-    );
-    const XCircle = (props) => (
-      <IconBase {...props}>
-        <circle cx="12" cy="12" r="10" />
-        <path d="m15 9-6 6" />
-        <path d="m9 9 6 6" />
-      </IconBase>
-    );
-    const Target = (props) => (
-      <IconBase {...props}>
-        <circle cx="12" cy="12" r="10" />
-        <circle cx="12" cy="12" r="6" />
-        <circle cx="12" cy="12" r="2" />
-      </IconBase>
-    );
-
-    // --- LOGO COMPONENT --- (Non modificato)
-    const Logo = ({ large = false }) => {
-      const logoSrc = "logo.png"; // metti logo.png nella root del repo
-
-      const largeMarkup = (
-        <div className="flex justify-center w-full mb-8 animate-in fade-in zoom-in duration-700">
-          <div className="w-48 h-48 md:w-64 md:h-64 relative logo-float filter drop-shadow-2xl">
-            <img
-              src={logoSrc}
-              alt="Toro Logo"
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.style.display = 'none';
-                const fallback = e.target.nextSibling;
-                if (fallback) fallback.style.display = 'flex';
-              }}
-            />
-            <div className="hidden w-full h-full bg-emerald-100 rounded-full items-center justify-center text-8xl border-4 border-emerald-500 shadow-xl"
-                 style={{display: 'none'}}>
-              🐮
+    // ---------- LOGO ----------
+    const Logo = ({ large=false }) => {
+      const logoSrc = "logo.png";
+      if (large) {
+        return (
+          <div className="flex justify-center w-full mb-8">
+            <div className="w-48 h-48 md:w-64 md:h-64 relative logo-float filter drop-shadow-2xl">
+              <img src={logoSrc} alt="Toro Logo" className="w-full h-full object-contain"
+                   onError={(e)=>{ e.target.onerror=null; e.target.style.display='none'; const f=e.target.nextSibling; if(f) f.style.display='flex'; }} />
+              <div className="hidden w-full h-full bg-emerald-100 rounded-full items-center justify-center text-8xl border-4 border-emerald-500 shadow-xl" style={{display:'none'}}>🐮</div>
             </div>
           </div>
-        </div>
-      );
-
-      const smallMarkup = (
+        );
+      }
+      return (
         <div className="fixed top-4 left-4 z-50 transition-all duration-300 hover:scale-110 cursor-pointer">
           <div className="w-16 h-16 md:w-20 md:h-20 relative filter drop-shadow-lg">
-            <img
-              src={logoSrc}
-              alt="Toro Logo"
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.style.display = 'none';
-                const fallback = e.target.nextSibling;
-                if (fallback) fallback.style.display = 'flex';
-              }}
-            />
-            <div className="hidden w-full h-full bg-emerald-100 rounded-full items-center justify-center text-3xl border-2 border-emerald-500"
-                 style={{display: 'none'}}>
-              🐮
-            </div>
+            <img src={logoSrc} alt="Toro Logo" className="w-full h-full object-contain" onError={(e)=>{ e.target.onerror=null; e.target.style.display='none'; const f=e.target.nextSibling; if(f) f.style.display='flex'; }} />
+            <div className="hidden w-full h-full bg-emerald-100 rounded-full items-center justify-center text-3xl border-2 border-emerald-500" style={{display:'none'}}>🐮</div>
           </div>
         </div>
       );
-
-      return large ? largeMarkup : smallMarkup;
     };
 
-    // --- DOMANDE DEL QUIZ --- (Non modificate)
+    // ---------- QUESTIONS ----------
     const questions = [
       { id: 1, question: "Cos'è l'interesse composto?", options: ["L'interesse che paghi alla banca", "L'interesse sul solo capitale iniziale", "L'interesse su capitale + interessi maturati", "Una tassa governativa"], correct: 2, explanation: "È l'effetto 'palla di neve': guadagni interessi anche sugli interessi passati." },
       { id: 2, question: "Cosa rappresenta un'azione (Stock)?", options: ["Un prestito allo Stato", "Una quota di proprietà di un'azienda", "Un'assicurazione sulla vita", "Una valuta digitale"], correct: 1, explanation: "Diventi socio dell'azienda partecipando a profitti e rischi." },
@@ -200,9 +119,12 @@
       { id: 10, question: "Cos'è il fondo di emergenza?", options: ["Soldi per le vacanze", "3-6 mesi di spese liquide per imprevisti", "Investimento ad alto rischio", "Fondo pensione"], correct: 1, explanation: "Serve per dormire sonni tranquilli senza dover vendere investimenti in caso di necessità." }
     ];
 
+    // ---------- MAIN APP ----------
     function App() {
-      // Imposta uno stato di caricamento per evitare sfarfallii iniziali
       const [isLoading, setIsLoading] = useState(true);
+
+      const [sessionId, setSessionId] = useState(null);
+      const [firebaseReady, setFirebaseReady] = useState(false);
 
       const [currentStep, setCurrentStep] = useState('intro');
       const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -213,36 +135,159 @@
       const [userAnswers, setUserAnswers] = useState({});
       const [formData, setFormData] = useState({ interestedInInvesting: null, interestedInApp: null, email: '' });
 
-      // 🔥 NUOVO: Logica di caricamento dei progressi
+      // Create or load sessionId & init firebase, restore saved progress
       useEffect(() => {
-        initFirebase();
-        
-        const savedProgress = loadProgress();
-        if (savedProgress) {
-            console.log("Progressi trovati, ripristino lo stato.");
-            // Assicurati che il quiz fosse iniziato per non forzare la vista 'quiz' se hanno solo visitato l'intro
-            if (savedProgress.currentQuestionIndex > 0 || Object.keys(savedProgress.userAnswers).length > 0) {
-                setCurrentStep('quiz');
-            } else if (savedProgress.currentStep === 'survey') {
-                setCurrentStep('survey');
-            }
-            setCurrentQuestionIndex(savedProgress.currentQuestionIndex);
-            setScore(savedProgress.score);
-            setUserAnswers(savedProgress.userAnswers);
+        // generate or load session id
+        try {
+          let s = localStorage.getItem('toro_session_id');
+          if (!s) {
+            s = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('sess-' + Date.now() + '-' + Math.random().toString(36).slice(2,8));
+            localStorage.setItem('toro_session_id', s);
+          }
+          setSessionId(s);
+        } catch (e) {
+          // fallback
+          const s = 'sess-' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
+          localStorage.setItem('toro_session_id', s);
+          setSessionId(s);
         }
-        setIsLoading(false);
+
+        // init firebase (v8 loaded as global 'firebase')
+        try {
+          if (typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') {
+            // avoid multiple init if already initialized
+            if (!firebase.apps || firebase.apps.length === 0) {
+              firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+            setFirebaseReady(true);
+            console.info('Firebase inizializzato (v8).');
+          } else {
+            console.warn('Firebase non disponibile (global firebase missing).');
+            db = null;
+          }
+        } catch (err) {
+          console.warn('Errore inizializzazione Firebase:', err);
+          db = null;
+        }
+
+        // restore local progress first (fast)
+        const local = loadProgressLocal();
+        if (local) {
+          console.info('Ripristino progressi locali', local);
+          if (local.userAnswers) setUserAnswers(local.userAnswers);
+          if (typeof local.currentQuestionIndex === 'number') setCurrentQuestionIndex(local.currentQuestionIndex);
+          if (typeof local.score === 'number') setScore(local.score);
+          if (local.currentStep) setCurrentStep(local.currentStep);
+        }
+
+        // then try to pull from Firestore (if available)
+        (async () => {
+          if (db) {
+            const sid = localStorage.getItem('toro_session_id');
+            if (sid) {
+              try {
+                const docRef = db.collection('quizSessions').doc(sid);
+                const docSnap = await docRef.get();
+                if (docSnap.exists) {
+                  const data = docSnap.data();
+                  console.info('Documento sessione trovato su Firestore:', data);
+                  if (data.answers) {
+                    // merge remote answers (remote priority)
+                    setUserAnswers((prev) => ({ ...prev, ...data.answers }));
+                    // derive score from saved correct flags if present else keep local
+                    // Also derive current index as next unanswered question
+                    const answeredKeys = Object.keys(data.answers || {}).filter(k => k.startsWith('question'));
+                    if (answeredKeys.length > 0) {
+                      const lastAnsweredQ = Math.max(...answeredKeys.map(k => parseInt(k.replace('question',''),10)));
+                      // set next index to lastAnsweredQ (0-based correction)
+                      const nextIndex = Math.min(lastAnsweredQ, questions.length);
+                      setCurrentQuestionIndex(nextIndex);
+                      setCurrentStep('quiz');
+                    }
+                  }
+                } else {
+                  console.info('Nessun documento sessione trovato su Firestore; verrà creato al primo autosave.');
+                }
+              } catch (err) {
+                console.warn('Errore lettura sessione da Firestore:', err);
+              }
+            }
+          }
+          setIsLoading(false);
+        })();
+
       }, []);
-      
-      // 🔥 NUOVO: Funzione per salvare i progressi
-      const saveCurrentState = (newAnswers = userAnswers, newScore = score, newIndex = currentQuestionIndex) => {
-        saveProgress({
-            currentStep: currentStep,
-            currentQuestionIndex: newIndex,
-            score: newScore,
-            userAnswers: newAnswers,
+
+      // ---------- HELPERS: autosave to Firestore + local ----------
+      async function autosaveAnswerToServer(sid, answerObj) {
+        // answerObj: e.g. { question1: "text", correct1: true }
+        if (!sid) return;
+        // prepare payload
+        const payload = {
+          answers: answerObj,
+          lastUpdate: firebase && firebase.firestore ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
+          completed: false
+        };
+        // local save (merge)
+        try {
+          const local = loadProgressLocal() || {};
+          const mergedAnswers = { ...(local.userAnswers || {}), ...answerObj };
+          const next = {
+            ...local,
+            userAnswers: mergedAnswers,
+            currentQuestionIndex,
+            score
+          };
+          saveProgressLocal(next);
+        } catch (e) { console.warn('Local merge failed', e); }
+
+        // server save (if db available)
+        if (db) {
+          try {
+            const docRef = db.collection('quizSessions').doc(sid);
+            // use set with merge to update only the answers map
+            await docRef.set(payload, { merge: true });
+            console.info('Autosave su Firestore OK', answerObj);
+          } catch (err) {
+            console.warn('Autosave Firestore fallito', err);
+          }
+        } else {
+          console.info('Firebase non pronto, autosave solo locale', answerObj);
+        }
+      }
+
+      // mark completed on server
+      async function markCompletedOnServer(sid, fullPayload = {}) {
+        if (!sid) return;
+        // local clean
+        clearProgressLocal();
+        if (db) {
+          try {
+            const docRef = db.collection('quizSessions').doc(sid);
+            await docRef.set({
+              completed: true,
+              completedAt: firebase && firebase.firestore ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
+              ...fullPayload
+            }, { merge: true });
+            console.info('Sessione marcata completed su Firestore');
+          } catch (err) {
+            console.warn('Errore marking completed', err);
+          }
+        } else {
+          console.info('Firebase non pronto: completamento rimane locale');
+        }
+      }
+
+      // ---------- UI Handlers ----------
+      const saveCurrentStateLocal = (answers = userAnswers, sc = score, idx = currentQuestionIndex, step = currentStep) => {
+        saveProgressLocal({
+          userAnswers: answers,
+          score: sc,
+          currentQuestionIndex: idx,
+          currentStep: step
         });
       };
-
 
       const handleOptionSelect = (index) => {
         if (isAnswerChecked) return;
@@ -251,11 +296,13 @@
 
         const currentQuestion = questions[currentQuestionIndex];
         let newScore = score;
+        const answerKey = `question${currentQuestion.id}`;
+        const correctKey = `correct${currentQuestion.id}`;
 
         const newAnswers = {
-            ...userAnswers,
-            [`question${currentQuestion.id}`]: currentQuestion.options[index],
-            [`correct${currentQuestion.id}`]: index === currentQuestion.correct,
+          ...userAnswers,
+          [answerKey]: currentQuestion.options[index],
+          [correctKey]: index === currentQuestion.correct
         };
         setUserAnswers(newAnswers);
 
@@ -263,79 +310,86 @@
           newScore = score + 1;
           setScore(newScore);
         }
-        
-        // 🔥 AUTOSAVE DOPO AVER RISPOSTO
-        saveCurrentState(newAnswers, newScore, currentQuestionIndex);
+
+        // local persistence
+        saveCurrentStateLocal(newAnswers, newScore, currentQuestionIndex, currentStep);
+
+        // autosave to server (only the specific keys to minimize writes)
+        const minimal = { [answerKey]: currentQuestion.options[index], [correctKey]: index === currentQuestion.correct };
+        autosaveAnswerToServer(sessionId, minimal);
       };
 
       const handleNextQuestion = () => {
         setSelectedOption(null);
         setIsAnswerChecked(false);
         const nextIndex = currentQuestionIndex + 1;
-        
+
         if (nextIndex < questions.length) {
           setCurrentQuestionIndex(nextIndex);
-          // AUTOSAVE dopo aver avanzato alla domanda successiva
-          saveCurrentState(userAnswers, score, nextIndex);
+          saveCurrentStateLocal(userAnswers, score, nextIndex, 'quiz');
         } else {
+          // go to survey
           setCurrentStep('survey');
-          // AUTOSAVE: salva che è arrivato al survey
-          saveProgress({currentStep: 'survey', currentQuestionIndex: nextIndex, score: score, userAnswers: userAnswers});
+          saveCurrentStateLocal(userAnswers, score, nextIndex, 'survey');
+          // also update server that user reached survey (not completed yet)
+          if (sessionId) {
+            autosaveAnswerToServer(sessionId, {}); // touch the doc to update lastUpdate
+          }
         }
       };
 
       const handleSurveySubmit = async (e) => {
         e.preventDefault();
         setIsSaving(true);
-        
-        const resultData = { 
-            ...formData, 
-            score, 
-            total: questions.length, 
-            date: new Date().toISOString(),
-            ...userAnswers, 
+
+        const resultData = {
+          ...formData,
+          score,
+          total: questions.length,
+          date: new Date().toISOString(),
+          ...userAnswers
         };
 
+        // try to save into a 'leads' collection AND mark session completed
         if (db) {
           try {
-            await db.collection("leads").add(resultData);
-            console.log('Dati salvati su Firebase Firestore (v8), incluse le risposte.');
+            // save into leads
+            await db.collection('leads').add(resultData);
+            // mark session completed
+            await markCompletedOnServer(sessionId, { finalScore: score });
+            console.info('Dati finali salvati su leads e sessione marcata come completata.');
           } catch (err) {
-            console.error('Salvataggio su Firebase fallito:', err);
-          }
-        } else {
-          // fallback: salva in localStorage
-          try {
+            console.warn('Errore salvataggio finale su Firestore', err);
+            // fallback local
             const saved = JSON.parse(localStorage.getItem('toro_leads') || '[]');
             saved.push(resultData);
             localStorage.setItem('toro_leads', JSON.stringify(saved));
-            console.warn('Salvataggio su localStorage di fallback.');
-          } catch (err) {
-            console.warn('Local save fallito', err);
           }
+        } else {
+          // fallback local
+          const saved = JSON.parse(localStorage.getItem('toro_leads') || '[]');
+          saved.push(resultData);
+          localStorage.setItem('toro_leads', JSON.stringify(saved));
         }
-        
-        // 🔥 PULISCE I PROGRESSI SALVATI QUANDO IL QUIZ È FINITO
-        clearProgress();
 
+        // clear local progress
+        clearProgressLocal();
         setIsSaving(false);
         setCurrentStep('results');
       };
-      
-      // Gestisce lo stato di caricamento iniziale
+
+      // ---------- RENDER ----------
+
       if (isLoading) {
-          return <div className="min-h-screen flex items-center justify-center">Caricamento...</div>;
+        return <div className="min-h-screen flex items-center justify-center">Caricamento...</div>;
       }
 
-      // --- INTRO ---
+      // INTRO
       if (currentStep === 'intro') {
-        const savedProgress = loadProgress();
-
+        const savedProgress = loadProgressLocal();
         return (
           <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
-            <div className="z-20 w-full max-w-2xl">
-              <Logo large={true} />
-            </div>
+            <div className="z-20 w-full max-w-2xl"><Logo large={true} /></div>
 
             <div className="max-w-2xl w-full bg-slate-800/60 border border-slate-700 rounded-3xl p-8 shadow-2xl backdrop-blur-md relative z-10">
               <h1 className="text-4xl md:text-5xl font-black text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 leading-tight">
@@ -347,9 +401,9 @@
               </div>
 
               {savedProgress ? (
-                  <div className="mb-4 p-4 bg-blue-500/20 text-blue-200 rounded-xl border border-blue-500/50 text-center font-medium">
-                      Hai dei progressi salvati (Domanda {savedProgress.currentQuestionIndex + 1}).
-                  </div>
+                <div className="mb-4 p-4 bg-blue-500/20 text-blue-200 rounded-xl border border-blue-500/50 text-center font-medium">
+                  Hai dei progressi salvati (Domanda {savedProgress.currentQuestionIndex + 1}).
+                </div>
               ) : null}
 
               <button onClick={() => setCurrentStep('quiz')}
@@ -366,38 +420,31 @@
         );
       }
 
-      // --- QUIZ ---
+      // QUIZ
       if (currentStep === 'quiz') {
         const question = questions[currentQuestionIndex];
         const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
 
-        // Controlla se questa domanda è già stata risposta nel salvataggio
-        const isQuestionPreviouslyAnswered = userAnswers[`question${question.id}`] !== undefined;
-        let initialSelectedOption = null;
-
-        if (isQuestionPreviouslyAnswered && !isAnswerChecked) {
-            // Cerchiamo l'indice della risposta salvata
-            const savedAnswerText = userAnswers[`question${question.id}`];
-            initialSelectedOption = question.options.indexOf(savedAnswerText);
-            
-            // Se la domanda era già stata risposta in una sessione precedente, la mostriamo come "checked"
-            if (initialSelectedOption !== -1) {
-                setTimeout(() => {
-                    setSelectedOption(initialSelectedOption);
-                    setIsAnswerChecked(true);
-                }, 0); // Lo eseguiamo in un timeout per garantire che lo stato sia aggiornato
+        // if this question already answered in userAnswers, show selected
+        useEffect(() => {
+          const saved = userAnswers[`question${question.id}`];
+          if (saved) {
+            const idx = question.options.indexOf(saved);
+            if (idx !== -1) {
+              setSelectedOption(idx);
+              setIsAnswerChecked(true);
             }
-        }
+          }
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [currentQuestionIndex]);
 
         return (
           <div className="min-h-screen bg-slate-50 flex flex-col items-center py-10 px-4 relative">
             <Logo large={false} />
 
             <div className="max-w-xl w-full bg-white rounded-3xl shadow-xl overflow-hidden mt-16 relative z-10 border-b-4 border-slate-200">
-              {/* Progress bar */}
               <div className="w-full bg-slate-100 h-4">
-                <div className="bg-emerald-500 h-4 rounded-r-full transition-all duration-500 ease-out"
-                      style={{ width: `${progressPercent}%` }} />
+                <div className="bg-emerald-500 h-4 rounded-r-full transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
               </div>
 
               <div className="p-6 md:p-8">
@@ -410,11 +457,9 @@
                 <div className="space-y-3">
                   {question.options.map((option, idx) => {
                     let style = "w-full text-left p-4 rounded-2xl border-2 transition-all font-bold text-lg flex justify-between items-center cursor-pointer ";
-                    
-                    // Controlla se l'utente ha risposto in questa sessione O se è stata caricata la risposta dal localStorage
                     const isSelected = isAnswerChecked && idx === selectedOption;
                     const isCorrect = isAnswerChecked && idx === question.correct;
-                    
+
                     if (!isAnswerChecked) {
                       style += "border-slate-200 hover:bg-slate-50 text-slate-600 hover:border-slate-300 active:border-b-0 active:translate-y-0.5 border-b-4";
                     } else if (isCorrect) {
@@ -453,23 +498,20 @@
                     </button>
                   </div>
                 )}
-
               </div>
             </div>
           </div>
         );
       }
 
-      // --- SURVEY --- (Non modificato nella logica di visualizzazione)
+      // SURVEY
       if (currentStep === 'survey') {
         return (
           <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
             <Logo large={false} />
             <div className="max-w-lg w-full bg-white rounded-3xl shadow-xl p-8 mt-16 relative z-10 border-b-4 border-slate-200">
               <div className="text-center mb-8">
-                <div className="inline-block p-4 bg-blue-100 rounded-full mb-4 text-blue-600">
-                  <Target size={32} />
-                </div>
+                <div className="inline-block p-4 bg-blue-100 rounded-full mb-4 text-blue-600"><Target size={32} /></div>
                 <h2 className="text-2xl font-black text-slate-800">Ci siamo quasi! 🚀</h2>
                 <p className="text-slate-500 font-medium mt-2">Ultime info per calcolare il tuo profilo.</p>
               </div>
@@ -478,46 +520,30 @@
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Ti interessa investire?</label>
                   <div className="grid grid-cols-2 gap-3">
-                    <button type="button"
-                            onClick={() => setFormData({...formData, interestedInInvesting: 'yes'})}
-                            className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInInvesting === 'yes' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      Sì 🔥
-                    </button>
-                    <button type="button"
-                            onClick={() => setFormData({...formData, interestedInInvesting: 'no'})}
-                            className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInInvesting === 'no' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      No 😴
-                    </button>
+                    <button type="button" onClick={() => setFormData({...formData, interestedInInvesting:'yes'})}
+                            className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInInvesting==='yes' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>Sì 🔥</button>
+                    <button type="button" onClick={() => setFormData({...formData, interestedInInvesting:'no'})}
+                            className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInInvesting==='no' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>No 😴</button>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Vuoi l'app gratuita?</label>
                   <div className="grid grid-cols-2 gap-3">
-                    <button type="button"
-                            onClick={() => setFormData({...formData, interestedInApp: 'yes'})}
-                            className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInApp === 'yes' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      Sì 📱
-                    </button>
-                    <button type="button"
-                            onClick={() => setFormData({...formData, interestedInApp: 'no'})}
-                            className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInApp === 'no' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      No 🙅
-                    </button>
+                    <button type="button" onClick={() => setFormData({...formData, interestedInApp:'yes'})}
+                            className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInApp==='yes' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>Sì 📱</button>
+                    <button type="button" onClick={() => setFormData({...formData, interestedInApp:'no'})}
+                            className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInApp==='no' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>No 🙅</button>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">La tua email migliore</label>
-                  <input type="email" required
-                          className="w-full p-4 border-2 border-slate-200 rounded-xl font-medium focus:outline-none focus:border-blue-500 transition-colors"
-                          value={formData.email}
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          placeholder="tuo@email.com" />
+                  <input type="email" required className="w-full p-4 border-2 border-slate-200 rounded-xl font-medium focus:outline-none focus:border-blue-500 transition-colors"
+                         value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="tuo@email.com" />
                 </div>
 
-                <button type="submit"
-                        disabled={!formData.interestedInInvesting || !formData.interestedInApp || !formData.email || isSaving}
+                <button type="submit" disabled={!formData.interestedInInvesting || !formData.interestedInApp || !formData.email || isSaving}
                         className="w-full bg-blue-600 disabled:bg-slate-300 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all">
                   {isSaving ? "CALCOLO..." : "MOSTRA RISULTATO"}
                 </button>
@@ -527,7 +553,7 @@
         );
       }
 
-      // --- RISULTATI --- (Non modificato)
+      // RESULTS
       if (currentStep === 'results') {
         const nationalAvg = 4;
         const isGood = score > nationalAvg;
@@ -545,9 +571,7 @@
 
                 <div className="inline-block bg-slate-100 rounded-xl p-4 mb-6 border border-slate-200">
                   <p className="text-slate-600 font-medium">Media Nazionale: <span className="font-bold text-slate-900">{nationalAvg}/10</span></p>
-                  <p className={`font-bold mt-1 ${isGood ? "text-emerald-600" : "text-orange-600"}`}>
-                    {isGood ? "Sei sopra la media! 🚀" : "Puoi fare di meglio. 📈"}
-                  </p>
+                  <p className={`font-bold mt-1 ${isGood ? "text-emerald-600" : "text-orange-600"}`}>{isGood ? "Sei sopra la media! 🚀" : "Puoi fare di meglio. 📈"}</p>
                 </div>
 
                 <div className="text-left bg-blue-50 p-6 rounded-2xl border border-blue-100">
@@ -564,9 +588,7 @@
                 <div className="relative z-10">
                   <h3 className="text-3xl font-black mb-4">Diventa un PRO 🐂</h3>
                   <p className="text-slate-300 mb-8 text-lg font-medium">Scarica l'app ToroAcademy per corsi gratuiti, quiz giornalieri e analisi di mercato.</p>
-                  <button className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xl py-5 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1 transition-all">
-                    SCARICA GRATIS
-                  </button>
+                  <button className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xl py-5 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1 transition-all">SCARICA GRATIS</button>
                 </div>
               </div>
             </div>
@@ -577,7 +599,7 @@
       return null;
     }
 
-    // Render app
+    // mount
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
