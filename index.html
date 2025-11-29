@@ -194,115 +194,43 @@
           db = null;
         }
 
-        // restore local progress first (fast)
-        const local = loadProgressLocal();
-        if (local) {
-          console.info('Ripristino progressi locali', local);
-          if (local.userAnswers) setUserAnswers(local.userAnswers);
-          if (typeof local.currentQuestionIndex === 'number') setCurrentQuestionIndex(local.currentQuestionIndex);
-          if (typeof local.score === 'number') setScore(local.score);
-          if (local.currentStep) setCurrentStep(local.currentStep);
-        }
+        setIsLoading(false);
 
-        // then try to pull from Firestore (if available)
-        (async () => {
-          if (db) {
-            const sid = localStorage.getItem('toro_session_id');
-            if (sid) {
-              try {
-                const docRef = db.collection('quizSessions').doc(sid);
-                const docSnap = await docRef.get();
-                if (docSnap.exists) {
-                  const data = docSnap.data();
-                  console.info('Documento sessione trovato su Firestore:', data);
-                  if (data.answers) {
-                    // merge remote answers (remote priority)
-                    setUserAnswers((prev) => ({ ...prev, ...data.answers }));
-                    // derive current index as next unanswered question
-                    const answeredKeys = Object.keys(data.answers || {}).filter(k => k.startsWith('question'));
-                    if (answeredKeys.length > 0) {
-                      const lastAnsweredQ = Math.max(...answeredKeys.map(k => parseInt(k.replace('question',''),10)));
-                      const nextIndex = Math.min(lastAnsweredQ, questions.length); // Questo potrebbe essere errato, dovrebbe essere l'indice
-                      
-                      // Calcoliamo il prossimo indice corretto
-                      const nextQIndex = questions.findIndex((q, idx) => !data.answers[`question${q.id}`]);
-                      
-                      if(nextQIndex !== -1 && nextQIndex < questions.length) {
-                         setCurrentQuestionIndex(nextQIndex);
-                         setCurrentStep('quiz');
-                      } else if (answeredKeys.length >= questions.length) {
-                         // Se ha risposto a tutto ma non ha finito il survey
-                         setCurrentQuestionIndex(questions.length - 1); // Va all'ultima domanda
-                         setCurrentStep('survey'); // O forse l'ultima domanda? Meglio 'survey'
-                      } else if (answeredKeys.length > 0) {
-                         // Fallback se logica sopra fallisce
-                         const lastAnsweredIndex = questions.findIndex(q => q.id === lastAnsweredQ);
-                         if(lastAnsweredIndex < questions.length - 1) {
-                           setCurrentQuestionIndex(lastAnsweredIndex + 1);
-                           setCurrentStep('quiz');
-                         } else {
-                           setCurrentStep('survey');
-                         }
-                      }
-                      
-                    }
-                  }
-                } else {
-                  console.info('Nessun documento sessione trovato su Firestore; verrà creato al primo autosave.');
-                }
-              } catch (err) {
-                console.warn('Errore lettura sessione da Firestore:', err);
-              }
-            }
-          }
-          setIsLoading(false);
-        })();
+        // ==================================================================
+        // ---------- FINE SEZIONE MODIFICATA ----------
+        // ==================================================================
 
       }, []);
 
       
-      // ==================================================================
-      // ---------- SEZIONE MODIFICATA ----------
-      // ==================================================================
-
       // ---------- HELPERS: autosave to Firestore + local ----------
+      // (Questa funzione è corretta dalla modifica precedente)
       async function autosaveAnswerToServer(sid, answerObj) {
         if (!sid) return;
         
-        // --- INIZIO MODIFICA ---
-        // Costruiamo il payload per l'aggiornamento.
-        // Includiamo i campi top-level che vogliamo aggiornare.
         const payload = {
           lastUpdate: firebase && firebase.firestore ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
           completed: false
         };
 
-        // Trasformiamo l'oggetto risposta (es. { question1: "..." })
-        // in un oggetto con "dot notation" per aggiornare la mappa "answers"
-        // senza sovrascrivere l'intera mappa.
-        // (es. { "answers.question1": "..." })
         if (answerObj) {
           for (const key in answerObj) {
             if (Object.prototype.hasOwnProperty.call(answerObj, key)) {
-              // Aggiunge "answers." prima di ogni chiave
               payload[`answers.${key}`] = answerObj[key];
             }
           }
         }
-        // --- FINE MODIFICA ---
 
-
-        // local save (merge) - this logic was already correct
+        // local save (merge)
         try {
           const local = loadProgressLocal() || {};
-          // Usiamo l'answerObj ricevuto per fare il merge
           const mergedAnswers = { ...(local.userAnswers || {}), ...answerObj };
           const next = {
             ...local,
             userAnswers: mergedAnswers,
-            currentQuestionIndex, // Ha accesso dallo scope di App
-            score, // Ha accesso dallo scope di App
-            currentStep // Ha accesso dallo scope di App
+            currentQuestionIndex, 
+            score, 
+            currentStep
           };
           saveProgressLocal(next);
         } catch (e) { console.warn('Local merge failed', e); }
@@ -311,17 +239,11 @@
         if (db) {
           try {
             const docRef = db.collection('quizSessions').doc(sid);
-            
-            // Usiamo set con merge. Grazie alla "dot notation" nel payload,
-            // aggiorniamo solo i campi specifici dentro la mappa "answers"
-            // E aggiorniamo "lastUpdate" e "completed" al top-level.
             await docRef.set(payload, { merge: true });
 
-            // Se l'oggetto risposte non era vuoto, loggiamo l'aggiornamento
             if (answerObj && Object.keys(answerObj).length > 0) {
               console.info('Autosave parziale su Firestore OK', answerObj);
             } else {
-              // Questo ora gestisce correttamente il "touch" da handleNextQuestion
               console.info('Timestamp sessione aggiornato su Firestore');
             }
           } catch (err) {
@@ -331,10 +253,6 @@
           console.info('Firebase non pronto, autosave solo locale', answerObj);
         }
       }
-
-      // ==================================================================
-      // ---------- FINE SEZIONE MODIFICATA ----------
-      // ==================================================================
 
 
       // mark completed on server
@@ -394,7 +312,6 @@
         }
 
         // local persistence (salva lo stato completo *attuale*)
-        // NOTA: passiamo il 'currentQuestionIndex' attuale, non il prossimo
         saveCurrentStateLocal(newAnswers, newScore, currentQuestionIndex, currentStep);
 
         // autosave to server (solo la risposta minima per questo step)
@@ -416,9 +333,6 @@
           setCurrentStep('survey');
           saveCurrentStateLocal(userAnswers, score, nextIndex, 'survey');
           
-          // also update server that user reached survey (not completed yet)
-          // La funzione modificata ora gestisce {} correttamente,
-          // aggiornando solo lastUpdate.
           if (sessionId) {
             autosaveAnswerToServer(sessionId, {}); // touch the doc to update lastUpdate
           }
@@ -500,16 +414,16 @@
 
       // INTRO
       if (currentStep === 'intro') {
-        const savedProgress = loadProgressLocal();
+        // const savedProgress = loadProgressLocal();
         // Calcolo progressi più accurato
-        let progressText = null;
-        if (savedProgress) {
-            if (savedProgress.currentStep === 'survey') {
-                progressText = "Sei arrivato al form finale!";
-            } else if (typeof savedProgress.currentQuestionIndex === 'number') {
-                progressText = `Domanda ${savedProgress.currentQuestionIndex + 1}`;
-            }
-        }
+        // let progressText = null;
+        // if (savedProgress) {
+        //     if (savedProgress.currentStep === 'survey') {
+        //         progressText = "Sei arrivato al form finale!";
+        //     } else if (typeof savedProgress.currentQuestionIndex === 'number') {
+        //         progressText = `Domanda ${savedProgress.currentQuestionIndex + 1}`;
+        //     }
+        // }
         
         return (
           <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -524,17 +438,20 @@
                 <p className="text-emerald-300">Scopri il tuo livello in 3 minuti.</p>
               </div>
 
-              {progressText ? (
+              {/* {progressText ? (
                 <div className="mb-4 p-4 bg-blue-500/20 text-blue-200 rounded-xl border border-blue-500/50 text-center font-medium">
                   Hai dei progressi salvati (Sei a: {progressText}).
                 </div>
               ) : null}
+              */}
 
               <button onClick={() => setCurrentStep('quiz')}
                       className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xl py-5 px-8 rounded-2xl transition-all transform hover:scale-[1.02] hover:shadow-emerald-500/50 shadow-lg flex items-center justify-center gap-3 border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1">
-                {progressText ? "RIPRENDI IL QUIZ" : "INIZIA ORA"} <ArrowRight size={20} />
+                {/* {progressText ? "RIPRENDI IL QUIZ" : "INIZIA ORA"} <ArrowRight size={20} /> */}
+                INIZIA ORA <ArrowRight size={20} />
               </button>
             </div>
+
 
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
               <div className="absolute -top-20 -left-10 w-1/2 h-1/2 bg-blue-600/20 rounded-full blur-[100px]"></div>
