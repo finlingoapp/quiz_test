@@ -199,7 +199,7 @@
       const [isAnswerChecked, setIsAnswerChecked] = useState(false);
       const [isSaving, setIsSaving] = useState(false);
       const [userAnswers, setUserAnswers] = useState({});
-      const [formData, setFormData] = useState({ interestedInInvesting: null, interestedInApp: null, email: '' });
+      const [formData, setFormData] = useState({ age: '', monthlySavings: '', interestedInLearning: null });
 
       // compute current question (safe to compute at top-level)
       const question = questions[currentQuestionIndex];
@@ -400,12 +400,12 @@
             
             // mark session completed (e salva i dati finali anche sulla sessione)
             const finalSessionPayload = {
-                finalScore: score,
-                email: formData.email,
-                interestedInApp: formData.interestedInApp,
-                interestedInInvesting: formData.interestedInInvesting,
-                answers: userAnswers // Salviamo il blocco completo di risposte qui
-            };
+                finalScore: score,
+                age: formData.age,
+                monthlySavings: formData.monthlySavings,
+                interestedInLearning: formData.interestedInLearning,
+                answers: userAnswers
+            };
             await markCompletedOnServer(sessionId, finalSessionPayload);
             
             console.info('Dati finali salvati su leads e sessione marcata come completata.');
