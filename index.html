@@ -571,7 +571,6 @@
         );
       }
 
-      // SURVEY
       if (currentStep === 'survey') {
         return (
           <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
@@ -592,7 +591,7 @@
                     id="age"
                     type="number"
                     required
-                    min="18" // Assumiamo un minimo per l'investimento
+                    min="18"
                     className="w-full p-4 border-2 border-slate-200 rounded-xl font-medium focus:outline-none focus:border-blue-500 transition-colors"
                     value={formData.age || ''} 
                     onChange={(e) => setFormData({...formData, age: e.target.value})} 
@@ -615,7 +614,7 @@
                   />
                 </div>
       
-                {/* 3. Sei interessato a imparare di più sulla finanza personale? (Pulsanti + Instagram) */}
+                {/* 3. Sei interessato a imparare di più sulla finanza personale? (Sì/No) */}
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Vuoi imparare di più sulla finanza personale?</label>
                   <div className="grid grid-cols-2 gap-3">
@@ -624,23 +623,22 @@
                       onClick={() => setFormData({...formData, interestedInLearning:'yes'})}
                       className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInLearning==='yes' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
                     >
-                      Sì, assolutamente! 🧠
+                      Sì 🔥
                     </button>
-                    <a 
-                      href="[INSERISCI QUI IL LINK AL TUO CANALE INSTAGRAM]" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      onClick={() => setFormData({...formData, interestedInLearning:'instagram_link'})}
-                      className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 border-slate-200 text-slate-500 hover:bg-slate-50 flex items-center justify-center`}
+                    <button 
+                      type="button" 
+                      onClick={() => setFormData({...formData, interestedInLearning:'no'})}
+                      className={`p-4 rounded-xl border-2 font-bold text-lg transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.interestedInLearning==='no' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
                     >
-                      Seguici su Instagram 📸
-                    </a>
+                      No 😴
+                    </button>
                   </div>
                 </div>
       
                 <button 
                   type="submit" 
-                  disabled={!formData.age || !formData.monthlySavings || isSaving}
+                  // Tutti e tre i campi sono ora richiesti per l'invio
+                  disabled={!formData.age || !formData.monthlySavings || !formData.interestedInLearning || isSaving}
                   className="w-full bg-blue-600 disabled:bg-slate-300 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all"
                 >
                   {isSaving ? "CALCOLO..." : "MOSTRA RISULTATO"}
@@ -654,60 +652,91 @@
 
       // RESULTS
       if (currentStep === 'results') {
-        const maxScore = 8; 
-        const nationalAvg = 4; // Manteniamo la media nazionale a 4 per coerenza con l'input
-        const isGood = score > nationalAvg;
-    
-        return (
-          <div className="min-h-screen bg-slate-50 py-10 px-4 relative">
-            <Logo large={false} />
-            <div className="max-w-2xl mx-auto space-y-8 mt-16 relative z-10">
-              <div className="bg-white rounded-3xl shadow-xl p-8 text-center border-b-4 border-slate-200">
-                <h2 className="text-lg text-slate-400 font-bold uppercase tracking-widest mb-4">Il tuo punteggio finale</h2>
-                <div className="flex justify-center items-baseline gap-2 mb-6">
-                  {/* Aggiornato a /8 */}
-                  <span className={`text-8xl font-black ${isGood ? 'text-emerald-500' : 'text-orange-500'} drop-shadow-sm`}>{score}</span>
-                  <span className="text-4xl text-slate-300 font-black">/{maxScore}</span>
+          const maxScore = 8;
+          const nationalAvg = 4;
+          const isGood = score > nationalAvg;
+          
+          // Dati raccolti dal survey (aggiunti)
+          const age = parseInt(formData.age);
+          const monthlySavings = parseFloat(formData.monthlySavings);
+          const interestedInLearning = formData.interestedInLearning === 'yes';
+      
+          // Stima del potenziale di accumulo (Formula di interesse composto per un'annualità: Future Value of an Annuity)
+          // Assumiamo 7% di rendimento annuo (0.07/12) per 15 anni (180 mesi).
+          const rate = 0.07 / 12;
+          const months = 15 * 12; 
+          
+          // FV = P * [((1 + r)^n - 1) / r]
+          const futureValue = monthlySavings * ((Math.pow(1 + rate, months) - 1) / rate);
+          const futureValueFormatted = (futureValue / 1000).toFixed(0); // Arrotondato a migliaia
+      
+          const isYoung = age < 35;
+      
+          return (
+            <div className="min-h-screen bg-slate-50 py-10 px-4 relative">
+              <Logo large={false} />
+              <div className="max-w-2xl mx-auto space-y-8 mt-16 relative z-10">
+                
+                {/* BLOCCO RISULTATO QUIZ */}
+                <div className="bg-white rounded-3xl shadow-xl p-8 text-center border-b-4 border-slate-200">
+                  <h2 className="text-lg text-slate-400 font-bold uppercase tracking-widest mb-4">Il tuo punteggio finale</h2>
+                  <div className="flex justify-center items-baseline gap-2 mb-6">
+                    <span className={`text-8xl font-black ${isGood ? 'text-emerald-500' : 'text-orange-500'} drop-shadow-sm`}>{score}</span>
+                    <span className="text-4xl text-slate-300 font-black">/{maxScore}</span>
+                  </div>
+      
+                  <div className="inline-block bg-slate-100 rounded-xl p-4 mb-6 border border-slate-200">
+                    <p className="text-slate-600 font-medium">Media stimata in Italia: <span className="font-bold text-slate-900">{nationalAvg}/{maxScore}</span></p>
+                    <p className={`font-bold mt-1 ${isGood ? "text-emerald-600" : "text-orange-600"}`}>{isGood ? "Sei sopra la media! 🚀" : "Puoi fare di meglio. 📈"}</p>
+                  </div>
+      
+                  {/* MESSAGGIO DETTAGLIATO BASATO SUL PUNTEGGIO */}
+                  <div className="text-left bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                    <p className="text-blue-900 font-medium leading-relaxed">
+                      {score >= 7 ? "Eccezionale! La tua base di conoscenza è solida. Ora il focus deve essere sull'ottimizzazione e l'azione."
+                        : score >= 4 ? "Buono, ma non basta per far fronte all'inflazione. Hai toccato con mano i tuoi punti deboli. Investire tempo per studiare le basi ti ripagherà."
+                        : "Attenzione! Rimanere all'oscuro della finanza ti costa caro ogni giorno. È essenziale iniziare subito a rafforzare le tue conoscenze per proteggere il tuo futuro."}
+                    </p>
+                  </div>
                 </div>
-    
-                <div className="inline-block bg-slate-100 rounded-xl p-4 mb-6 border border-slate-200">
-                  {/* Aggiornata la media nazionale */}
-                  <p className="text-slate-600 font-medium">Media stimata in Italia: <span className="font-bold text-slate-900">{nationalAvg}/{maxScore}</span></p>
-                  <p className={`font-bold mt-1 ${isGood ? "text-emerald-600" : "text-orange-600"}`}>{isGood ? "Sei sopra la media! 🚀" : "Puoi fare di meglio. 📈"}</p>
-                </div>
-    
-                <div className="text-left bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                  <p className="text-blue-900 font-medium leading-relaxed">
-                    {/* Ricalibrazione dei messaggi per un massimo di 8 punti */}
-                    {score >= 7 ? "Eccezionale! Hai una solida base finanziaria e sei pronto per un percorso più avanzato."
-                      : score >= 4 ? "Buono, ma hai diverse lacune importanti. Studiare le basi ti farà gestire molto meglio i tuoi risparmi e combattere l'inflazione."
-                      : "Attenzione! La finanza può sembrare complessa, ma ignorarla ti costa cara nel tempo. Inizia subito a rafforzare le tue conoscenze."}
+                
+                {/* NUOVO BLOCCO PERSONALIZZATO: POTENZIALE E CHIAMATA ALL'AZIONE */}
+                <div className="bg-slate-900 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden text-center border-b-4 border-black">
+                  <div className="absolute -top-10 -right-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
+                  <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+                  
+                  <h3 className="text-3xl font-black mb-4 relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-emerald-300">
+                    Il Tuo Potenziale Finanziario
+                  </h3>
+                  
+                  <p className="text-slate-300 text-lg mb-4 relative z-10">
+                    Se investi regolarmente i tuoi <span className="text-emerald-300 font-bold">{monthlySavings}€</span> al mese con un rendimento medio del 7%, potresti trasformarli in circa <span className="text-emerald-300 font-bold">{futureValueFormatted} mila €</span> in 15 anni. Questo è il potere dell'interesse composto.
                   </p>
+      
+                  <h4 className="text-xl font-bold mt-6 mb-4 relative z-10">
+                      {isYoung ? 'Sei giovane, il tempo è il tuo alleato più grande! ⏳' : 'Non è mai troppo tardi. Inizia ora!'}
+                  </h4>
+                  
+                  <p className="text-slate-300 text-lg mb-6 relative z-10">
+                    {interestedInLearning 
+                      ? "Hai espresso interesse nell'apprendimento. Perfetto, è il primo passo!"
+                      : "Non ti interessa imparare? Sappi che l'inflazione non si ferma. Ripensaci, il tuo futuro dipende da queste basi."
+                    }
+                  </p>
+                  
+                  {/* CTA FINALE */}
+                  <a 
+                    href="[INSERISCI QUI IL LINK AL TUO CANALE INSTAGRAM]" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-block bg-emerald-500 text-white font-black py-3 px-6 rounded-2xl shadow-lg transition-transform hover:scale-105 relative z-10 uppercase tracking-widest"
+                  >
+                    Scopri i prossimi passi su Instagram 📸
+                  </a>
                 </div>
-              </div>
-    
-              {/* Nuovo Blocco CTA per Instagram */}
-              <div className="bg-slate-900 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden text-center border-b-4 border-black">
-                <div className="absolute -top-10 -right-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
-                
-                <h3 className="text-3xl font-black mb-4 relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-emerald-300">Non finisce qui!</h3>
-                <p className="text-slate-300 text-lg mb-6 relative z-10">
-                  La finanza personale in Italia è spesso un tabù. Continua a imparare per far crescere il tuo capitale e non lasciare che l'inflazione eroda i tuoi sforzi.
-                </p>
-                
-                <a 
-                  href="[INSERISCI QUI IL LINK AL TUO CANALE INSTAGRAM]" // Placeholder per il link Instagram
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="inline-block bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform hover:scale-105 relative z-10"
-                >
-                  Seguici su Instagram e impara ogni giorno 📸
-                </a>
               </div>
             </div>
-          </div>
-        );
+          );
       }
 
       return <div>Stato sconosciuto</div>;
