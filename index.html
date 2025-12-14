@@ -665,7 +665,8 @@
                       <p className={`font-black text-lg mb-2 ${selectedOption === question.correct ? 'text-emerald-800' : 'text-blue-800'}`}>
                         {selectedOption === question.correct ? "Ottimo! 🎉" : "Non proprio... 🤔"}
                       </p>
-                      <p className="text-slate-700 text-md leading-relaxed font-medium">{question.explanation}</p>
+                      <p
+                        className="text-slate-700 text-md leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: question.explanation }} />
                     </div>
 
                     <button onClick={handleNextQuestion}
