@@ -127,63 +127,145 @@
 
    // --- DOMANDE ---
    const questions = [
-    {
-      id: 1,
-      question: "Che cos'è l'inflazione e che cosa comporta per i tuoi risparmi?",
-      options: ["Un aggiustamento tecnico dei tassi di cambio", "L'erosione progressiva del potere d'acquisto reale", "La tassa sulle transazioni finanziarie", "La fluttuazione giornaliera dei mercati azionari"],
-      correct: 1,
-      explanation: "L'inflazione riduce il valore reale del denaro nel tempo, rendendo i tuoi risparmi statici (i famosi 'soldi messi sotto il materasso') meno efficaci.<br><br>Ad esempio, un Big Mac Menu che costa 9,40€ oggi, con un'inflazione media del 2% annuo, costerà circa 23€ nel 2070. Allo stesso modo, una qualsiasi somma di denaro non investita perderebbe oltre il 20% del suo valore in 10 anni.<br><br>Per combattere questo fenomeno, la soluzione più efficace è investire."
-    },
-    {
-      id: 2,
-      question: "Se investi 50.000€ con un rendimento medio del 5% annuo, quanto avrai (all'incirca) dopo 15 anni?",
-      options: ["75.000€", "87.500€", "104.000€", "60.000€"],
-      correct: 2,
-      explanation: "Grazie al fatto che il guadagno ottenuto ogni anno faccia parte del capitale investito per l'anno successivo (fenomeno chiamato 'interesse composto'), il capitale più che raddoppia in circa 15 anni al 5% di rendimento medio. <br><br>La crescita, infatti, non è lineare ma bensì esponenziale (50'000 * 1.05^15 ≈ 103.9k)."
-    },
-    {
-      id: 3,
-      question: "Che cosa conferisce il possesso di un'azione ordinaria (Stock)?",
-      options: ["Il diritto al rimborso del capitale a scadenza", "Una 'fetta' effettiva della società, con diritti patrimoniali (dividendi) e amministrativi (voto) inclusi", "Un interesse fisso garantito annualmente", "La prelazione sui beni aziendali in caso di fallimento"],
-      correct: 1,
-      explanation: "L'azione rappresenta una quota del capitale sociale dell'azienda, conferendo diritti di voto e partecipazione agli utili.<br><br>Tuttavia, è importante notare che non include una garanzia di rimborso a scadenza, a differenza, ad esempio, di un'obbligazione."
-    },
-    {
-      id: 4,
-      question: "Che cos'è un ETF (Exchange Traded Fund)?",
-      options: ["Un fondo a gestione passiva quotato in borsa", "Un fondo comune a gestione attiva con alti costi", "Un prodotto derivato ad alto rischio", "Un certificato di deposito bancario"],
-      correct: 0,
-      explanation: "L'ETF è un prodotto che replica un indice di mercato (gestione passiva) ed è scambiato come un'azione, offrendo diversificazione a costi ridotti. <br><br>A titolo di esempio, l'indice più noto è lo S&P 500, che segue l'andamento delle azioni formate dalle 500 aziende statunitensi a maggiore capitalizzazione.<br><br>Solitamente, l'ETF è la soluzione migliore per chi inizia ad investire o, in generale, per chi non ha un capitale contenuto a disposizione."
-    },
-    {
-      id: 5,
-      question: "Basandosi su dati storici, qual è la probabilità di ottenere un rendimento negativo (di perdere soldi) investendo nello S&P 500 per un periodo di 10 anni?",
-      options: ["Circa il 50%", "Intorno al 10%", "È impossibile (0%)", "Superiore al 30%"],
-      correct: 1,
-      explanation: "Storicamente, considerando un orizzonte temporale di 10 anni, la probabilità di perdita si riduce drasticamente a circa il 10%.<br><br>Estendendo l'orizzonte a 20 anni, invece, è capitato solo una volta nella storia (1901) che il principale indice americano perdesse di valore. "
-    },
-    {
-      id: 6,
-      question: "A parità di somma investita e con un rendimento medio annuo del 7%, di quanto aumenta il capitale nel 2025 se l’investimento parte 20 anni prima invece che 10?",
-      options: ["È praticamente uguale, perché il tasso di interesse non cambia.", "È superiore di circa il 30/40%", "È superiore di circa il 70%", "È circa il doppio."],
-      correct: 3,
-      explanation: "Il tempo è il fattore più potente nell'interesse composto, generando una curva di crescita esponenziale. <br><br>Con un rendimento medio annuo del 7% (rendimento medio storico dello S&P 500), un investimento di 10 anni raddoppia il capitale (≈1.97 volte tanto), mentre uno di 20 anni lo quadruplica (≈3.87 volte tanto)!<br><br>Investire per 20 anni invece che per 10 non ti dà quindi soltanto 'il doppio degli interessi', ma il doppio del capitale finale totale (se investissi €10'000, al posto di €19'600 ne avresti €38'600!)."
-    },
-    {
-      id: 7,
-      question: "Cosa si intende per 'Rischio Specifico' negli investimenti?",
-      options: ["Il rischio che l'intero mercato crolli", "Il rischio legato all'andamento di una singola azienda o settore", "Il rischio di cambio valuta", "Il rischio legato all'inflazione"],
-      correct: 1,
-      explanation: "È il rischio legato a un singolo titolo o a un settore specifico.<br><br>La diversificazione (es. tramite ETF) serve proprio ad abbattere questo rischio specifico (noto anche come rischio non sistematico), riducendo l'impatto di una performance negativa di una singola componente. "
-    },
-    {
-      id: 8,
-      question: "Quale ruolo ricopre il fondo di emergenza in una pianificazione finanziaria?",
-      options: ["Generare rendimenti elevati nel breve termine", "Proteggere il capitale investito dalla volatilità di mercato", "Coprire spese impreviste senza liquidare asset strategici", "Accumulare capitale per l'acquisto della prima casa"],
-      correct: 2,
-      explanation: "Agisce da cuscinetto finanziario liquido per coprire spese impreviste.<br><br>Questo evita di dover disinvestire posizioni a lungo termine (ad esempio azioni o ETF) in momenti di mercato sfavorevoli, che potrebbero comportare perdite sul capitale strategico."
-    }
-  ];
+  { 
+    id: 1, 
+    question: "Che cos'è l'inflazione e che cosa comporta per i tuoi risparmi?", 
+    options: [
+      "Un aggiustamento tecnico dei tassi di cambio",
+      "L'erosione progressiva del potere d'acquisto reale",
+      "La tassa sulle transazioni finanziarie",
+      "La fluttuazione giornaliera dei mercati azionari"
+    ], 
+    correct: 1, 
+    explanation: 
+      "L'inflazione riduce il valore reale del denaro nel tempo, rendendo i tuoi risparmi statici (i famosi 'soldi messi sotto il materasso') meno efficaci." +
+      "<br><br>" +
+      "Ad esempio, un Big Mac Menu che costa 9,40€ oggi, con un'inflazione media del 2% annuo, costerà circa 23€ nel 2070." +
+      "<br><br>" +
+      "Allo stesso modo, una qualsiasi somma di denaro non investita perderebbe oltre il 20% del suo valore in 10 anni." +
+      "<br><br>" +
+      "Per combattere questo fenomeno, la soluzione più efficace è investire."
+  },
+  { 
+    id: 2, 
+    question: "Se investi 50.000€ con un rendimento medio del 5% annuo, quanto avrai (all'incirca) dopo 15 anni?", 
+    options: ["75.000€", "87.500€", "104.000€", "60.000€"], 
+    correct: 2, 
+    explanation: 
+      "Grazie al fatto che il guadagno ottenuto ogni anno faccia parte del capitale investito per l'anno successivo (fenomeno chiamato 'interesse composto'), il capitale cresce nel tempo." +
+      "<br><br>" +
+      "La crescita, infatti, non è lineare ma esponenziale." +
+      "<br><br>" +
+      "50.000 × 1.05¹⁵ ≈ 103.900€, quindi il capitale più che raddoppia in circa 15 anni."
+  },
+  { 
+    id: 3, 
+    question: "Che cosa conferisce il possesso di un'azione ordinaria (Stock)?", 
+    options: [
+      "Il diritto al rimborso del capitale a scadenza",
+      "Una 'fetta' effettiva della società, con diritti patrimoniali (dividendi) e amministrativi (voto) inclusi",
+      "Un interesse fisso garantito annualmente",
+      "La prelazione sui beni aziendali in caso di fallimento"
+    ], 
+    correct: 1, 
+    explanation: 
+      "L'azione rappresenta una quota del capitale sociale dell'azienda." +
+      "<br><br>" +
+      "Chi possiede un'azione ha diritto di voto e può partecipare agli utili tramite i dividendi." +
+      "<br><br>" +
+      "Non esiste però alcuna garanzia di rimborso del capitale investito."
+  },
+  { 
+    id: 4, 
+    question: "Che cos'è un ETF (Exchange Traded Fund)?", 
+    options: [
+      "Un fondo a gestione passiva quotato in borsa",
+      "Un fondo comune a gestione attiva con alti costi",
+      "Un prodotto derivato ad alto rischio",
+      "Un certificato di deposito bancario"
+    ], 
+    correct: 0, 
+    explanation: 
+      "Un ETF è un fondo che replica un indice di mercato (gestione passiva) ed è scambiato in borsa come un'azione." +
+      "<br><br>" +
+      "Offre un'elevata diversificazione a costi molto ridotti." +
+      "<br><br>" +
+      "Un esempio famoso è lo S&P 500, che segue le 500 aziende statunitensi a maggiore capitalizzazione." +
+      "<br><br>" +
+      "Per chi inizia ad investire (o ha capitali contenuti), l'ETF è spesso la soluzione più efficiente."
+  },
+  { 
+    id: 5, 
+    question: "Basandosi su dati storici, qual è la probabilità di ottenere un rendimento negativo investendo nello S&P 500 per un periodo di 10 anni?", 
+    options: [
+      "Circa il 50%",
+      "Intorno al 10%",
+      "È impossibile (0%)",
+      "Superiore al 30%"
+    ], 
+    correct: 1, 
+    explanation: 
+      "Storicamente, su un orizzonte di 10 anni, la probabilità di perdita si riduce drasticamente." +
+      "<br><br>" +
+      "I dati mostrano che è intorno al 10%." +
+      "<br><br>" +
+      "Estendendo l'orizzonte a 20 anni, è successo solo una volta nella storia (1901) che l'indice perdesse valore."
+  },
+  { 
+    id: 6, 
+    question: "A parità di somma investita e con un rendimento medio annuo del 7%, di quanto aumenta il capitale nel 2025 se l’investimento parte 20 anni prima invece che 10?", 
+    options: [
+      "È praticamente uguale, perché il tasso di interesse non cambia.",
+      "È superiore di circa il 30/40%",
+      "È superiore di circa il 70%",
+      "È circa il doppio."
+    ], 
+    correct: 3, 
+    explanation: 
+      "Il tempo è il fattore più potente dell'interesse composto." +
+      "<br><br>" +
+      "Con un rendimento medio annuo del 7%, un investimento di 10 anni raddoppia il capitale (≈1,97x)." +
+      "<br><br>" +
+      "Uno di 20 anni lo quadruplica quasi (≈3,87x)." +
+      "<br><br>" +
+      "Investire per 20 anni invece che per 10 porta quindi a un capitale finale circa doppio."
+  },
+  { 
+    id: 7, 
+    question: "Cosa si intende per 'Rischio Specifico' negli investimenti?", 
+    options: [
+      "Il rischio che l'intero mercato crolli",
+      "Il rischio legato all'andamento di una singola azienda o settore",
+      "Il rischio di cambio valuta",
+      "Il rischio legato all'inflazione"
+    ], 
+    correct: 1, 
+    explanation: 
+      "Il rischio specifico è legato a una singola azienda o settore." +
+      "<br><br>" +
+      "Problemi interni possono far crollare un titolo anche se il mercato va bene." +
+      "<br><br>" +
+      "La diversificazione (ad esempio tramite ETF) serve proprio a ridurre questo rischio."
+  },
+  { 
+    id: 8, 
+    question: "Quale ruolo ricopre il fondo di emergenza in una pianificazione finanziaria?", 
+    options: [
+      "Generare rendimenti elevati nel breve termine",
+      "Proteggere il capitale investito dalla volatilità di mercato",
+      "Coprire spese impreviste senza liquidare asset strategici",
+      "Accumulare capitale per l'acquisto della prima casa"
+    ], 
+    correct: 2, 
+    explanation: 
+      "Il fondo di emergenza serve a coprire spese impreviste." +
+      "<br><br>" +
+      "Permette di affrontare imprevisti senza dover vendere investimenti di lungo periodo." +
+      "<br><br>" +
+      "In questo modo protegge la strategia finanziaria complessiva."
+  }
+];
+
 
     // ---------- MAIN APP ----------
     function App() {
