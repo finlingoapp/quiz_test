@@ -129,45 +129,45 @@
     const questions = [
   { 
     id: 1, 
-    question: "Cos'è l'inflazione e cosa comporta per i tuoi risparmi?", 
+    question: "Che cos'è l'inflazione e che cosa comporta per i tuoi risparmi?", 
     options: ["Un aggiustamento tecnico dei tassi di cambio", "L'erosione progressiva del potere d'acquisto reale", "La tassa sulle transazioni finanziarie", "La fluttuazione giornaliera dei mercati azionari"], 
     correct: 1, 
-    explanation: "L'inflazione riduce il valore reale del denaro nel tempo, rendendo i tuoi risparmi statici meno efficaci. Per combatterla è fondamentale investire. Ad esempio, un Big Mac Menu che costa 9,40€ oggi, con un'inflazione media del 2% annuo, costerà circa 23€ nel 2070. Non investiti, 10.000€ perderebbero oltre il 20% del loro valore in 10 anni." 
+    explanation: "L'inflazione riduce il valore reale del denaro nel tempo, rendendo i tuoi risparmi statici (i famosi \"soldi messi sotto il materasso\") meno efficaci.\nAd esempio, un Big Mac Menu che costa 9,40€ oggi, con un'inflazione media del 2% annuo, costerà circa 23€ nel 2070. Allo stesso modo, una qualsiasi somma di denaro non investita perderebbe oltre il 20% del suo valore in 10 anni.\nPer combattere questo fenomeno, la soluzione più efficace è investire." 
   },
   { 
     id: 2, 
-    question: "Se investi 50.000€ con un rendimento medio del 5% annuo, quanto avrai circa dopo 15 anni?", 
+    question: "Se investi 50.000€ con un rendimento medio del 5% annuo, quanto avrai (all'incirca) dopo 15 anni?", 
     options: ["75.000€", "87.500€", "104.000€", "60.000€"], 
     correct: 2, 
-    explanation: "Grazie all'interesse composto, il capitale raddoppia in circa 15 anni al 5%. La crescita non è lineare ma esponenziale (50k * 1,05^15 ≈ 103.9k)." 
+    explanation: "Grazie al fatto che il guadagno ottenuto ogni anno faccia parte del capitale investito per l'anno successivo (fenomeno chiamato \"interesse composto\"), il capitale più che raddoppia in circa 15 anni al 5% di rendimento medio. La crescita, infatti, non è lineare ma bensì esponenziale (50'000 * 1.05^15 ≈ 103.9k)." 
   },
   { 
     id: 3, 
-    question: "Cos'è un ETF (Exchange Traded Fund)?", 
-    options: ["Un fondo a gestione passiva quotato in borsa", "Un fondo comune a gestione attiva con alti costi", "Un prodotto derivato ad alto rischio", "Un certificato di deposito bancario"], 
-    correct: 0, 
-    explanation: "L'ETF replica un indice di mercato (gestione passiva) ed è scambiato come un'azione, offrendo diversificazione a costi ridotti." 
+    question: "Che cosa conferisce il possesso di un'azione ordinaria (Stock)?", 
+    options: ["Il diritto al rimborso del capitale a scadenza", "Una "fetta" effettiva della società, con diritti patrimoniali (dividendi) e amministrativi (voto) inclusi", "Un interesse fisso garantito annualmente", "La prelazione sui beni aziendali in caso di fallimento"], 
+    correct: 1, 
+    explanation: "L'azione rappresenta una quota del capitale sociale dell'azienda, conferendo diritti di voto e partecipazione agli utili, ma senza garanzia di rimborso." 
   },
   { 
     id: 4, 
-    question: "Basandosi su dati storici, qual è la probabilità di ottenere un rendimento negativo investendo nell'S&P 500 per un periodo di 10 anni?", 
-    options: ["Circa il 50%", "Intorno al 10%", "È impossibile (0%)", "Superiore al 30%"], 
-    correct: 1, 
-    explanation: "Storicamente, estendendo l'orizzonte temporale a 10 anni, la probabilità di perdita si riduce drasticamente a circa il 10%." 
+    question: "Che cos'è un ETF (Exchange Traded Fund)?", 
+    options: ["Un fondo a gestione passiva quotato in borsa", "Un fondo comune a gestione attiva con alti costi", "Un prodotto derivato ad alto rischio", "Un certificato di deposito bancario"], 
+    correct: 0, 
+    explanation: "L'ETF è un prodotto che replica un indice di mercato (gestione passiva) ed è scambiato come un'azione, offrendo diversificazione a costi ridotti. A titolo di esempio, l'indice più noto è lo S&P 500, che segue l'andamento delle azioni formate dalle 500 aziende statunitensi a maggiore capitalizzazione. Solitamente, l'ETF è la soluzione migliore per chi inizia ad investire o, in generale, per chi non ha un capitale contenuto a disposizione." 
   },
   { 
     id: 5, 
-    question: "Qual è l'impatto finanziario di iniziare a investire 10 anni prima?", 
-    options: ["Marginale, conta solo il capitale investito", "Lineare, guadagni semplicemente per 10 anni in più", "Esponenziale, grazie all'effetto dell'interesse composto", "Negativo, a causa dell'esposizione prolungata ai rischi"], 
-    correct: 2, 
-    explanation: "Il tempo è il fattore più potente nell'interesse composto, generando una curva di crescita esponenziale e non lineare." 
+    question: "Basandosi su dati storici, qual è la probabilità di ottenere un rendimento negativo (di perdere soldi) investendo nello S&P 500 per un periodo di 10 anni?", 
+    options: ["Circa il 50%", "Intorno al 10%", "È impossibile (0%)", "Superiore al 30%"], 
+    correct: 1, 
+    explanation: "Storicamente, considerando un'orizzonte temporale di 10 anni, la probabilità di perdita si riduce drasticamente a circa il 10%. Estendendo l'orizzonte a 20 anni, invece, è capitato solo una volta nella storia (1901) che il principale indice americano perdesse di valore." 
   },
   { 
     id: 6, 
-    question: "Cosa conferisce il possesso di un'azione ordinaria (Stock)?", 
-    options: ["Il diritto al rimborso del capitale a scadenza", "Diritti patrimoniali (dividendi) e amministrativi (voto)", "Un interesse fisso garantito annualmente", "La prelazione sui beni aziendali in caso di fallimento"], 
-    correct: 1, 
-    explanation: "L'azione rappresenta una quota del capitale sociale, conferendo diritti di voto e partecipazione agli utili, ma senza garanzia di rimborso." 
+    question: "A parità di somma investita e con un rendimento medio annuo del 7%, di quanto aumenta il capitale nel 2025 se l’investimento parte 20 anni prima invece che 10?", 
+    options: ["È praticamente uguale, perché il tasso di interesse non cambia.", "È superiore di circa il 30/40%", "È superiore di circa il 70%", "È circa il doppio."], 
+    correct: 2, 
+    explanation: "Il tempo è il fattore più potente nell'interesse composto, generando una curva di crescita esponenziale. Con un rendimento medio annuo del 7% (rendimento medio storico dello S&P 500), un investimento di 10 anni raddoppia il capitale (≈1.97 volte tanto), mentre uno di 20 anni lo quadruplica (≈3.87 volte tanto)! \nInvestire per 20 anni invece che per 10 non ti dà quindi soltanto \"il doppio degli interessi\", ma il doppio del capitale finale totale (se investissi €10'000, al posto di €19'600 ne avresti €38'600!)." 
   },
   { 
     id: 7, 
