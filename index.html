@@ -126,64 +126,64 @@
     };
 
     // --- DOMANDE ---
-    const questions = [
-  { 
-    id: 1, 
-    question: "Che cos'è l'inflazione e che cosa comporta per i tuoi risparmi?", 
-    options: ["Un aggiustamento tecnico dei tassi di cambio", "L'erosione progressiva del potere d'acquisto reale", "La tassa sulle transazioni finanziarie", "La fluttuazione giornaliera dei mercati azionari"], 
-    correct: 1, 
-    explanation: "L'inflazione riduce il valore reale del denaro nel tempo, rendendo i tuoi risparmi statici (i famosi 'soldi messi sotto il materasso') meno efficaci.\nAd esempio, un Big Mac Menu che costa 9,40€ oggi, con un'inflazione media del 2% annuo, costerà circa 23€ nel 2070. Allo stesso modo, una qualsiasi somma di denaro non investita perderebbe oltre il 20% del suo valore in 10 anni.\nPer combattere questo fenomeno, la soluzione più efficace è investire." 
-  },
-  { 
-    id: 2, 
-    question: "Se investi 50.000€ con un rendimento medio del 5% annuo, quanto avrai (all'incirca) dopo 15 anni?", 
-    options: ["75.000€", "87.500€", "104.000€", "60.000€"], 
-    correct: 2, 
-    explanation: "Grazie al fatto che il guadagno ottenuto ogni anno faccia parte del capitale investito per l'anno successivo (fenomeno chiamato 'interesse composto'), il capitale più che raddoppia in circa 15 anni al 5% di rendimento medio. La crescita, infatti, non è lineare ma bensì esponenziale (50'000 * 1.05^15 ≈ 103.9k)." 
-  },
-  { 
-    id: 3, 
-    question: "Che cosa conferisce il possesso di un'azione ordinaria (Stock)?", 
-    options: ["Il diritto al rimborso del capitale a scadenza", "Una 'fetta' effettiva della società, con diritti patrimoniali (dividendi) e amministrativi (voto) inclusi", "Un interesse fisso garantito annualmente", "La prelazione sui beni aziendali in caso di fallimento"], 
-    correct: 1, 
-    explanation: "L'azione rappresenta una quota del capitale sociale dell'azienda, conferendo diritti di voto e partecipazione agli utili, ma senza garanzia di rimborso." 
-  },
-  { 
-    id: 4, 
-    question: "Che cos'è un ETF (Exchange Traded Fund)?", 
-    options: ["Un fondo a gestione passiva quotato in borsa", "Un fondo comune a gestione attiva con alti costi", "Un prodotto derivato ad alto rischio", "Un certificato di deposito bancario"], 
-    correct: 0, 
-    explanation: "L'ETF è un prodotto che replica un indice di mercato (gestione passiva) ed è scambiato come un'azione, offrendo diversificazione a costi ridotti. A titolo di esempio, l'indice più noto è lo S&P 500, che segue l'andamento delle azioni formate dalle 500 aziende statunitensi a maggiore capitalizzazione. \nSolitamente, l'ETF è la soluzione migliore per chi inizia ad investire o, in generale, per chi non ha un capitale contenuto a disposizione." 
-  },
-  { 
-    id: 5, 
-    question: "Basandosi su dati storici, qual è la probabilità di ottenere un rendimento negativo (di perdere soldi) investendo nello S&P 500 per un periodo di 10 anni?", 
-    options: ["Circa il 50%", "Intorno al 10%", "È impossibile (0%)", "Superiore al 30%"], 
-    correct: 1, 
-    explanation: "Storicamente, considerando un'orizzonte temporale di 10 anni, la probabilità di perdita si riduce drasticamente a circa il 10%. Estendendo l'orizzonte a 20 anni, invece, è capitato solo una volta nella storia (1901) che il principale indice americano perdesse di valore." 
-  },
-  { 
-    id: 6, 
-    question: "A parità di somma investita e con un rendimento medio annuo del 7%, di quanto aumenta il capitale nel 2025 se l’investimento parte 20 anni prima invece che 10?", 
-    options: ["È praticamente uguale, perché il tasso di interesse non cambia.", "È superiore di circa il 30/40%", "È superiore di circa il 70%", "È circa il doppio."], 
-    correct: 3, 
-    explanation: "Il tempo è il fattore più potente nell'interesse composto, generando una curva di crescita esponenziale. Con un rendimento medio annuo del 7% (rendimento medio storico dello S&P 500), un investimento di 10 anni raddoppia il capitale (≈1.97 volte tanto), mentre uno di 20 anni lo quadruplica (≈3.87 volte tanto)! \nInvestire per 20 anni invece che per 10 non ti dà quindi soltanto 'il doppio degli interessi', ma il doppio del capitale finale totale (se investissi €10'000, al posto di €19'600 ne avresti €38'600!)." 
-  },
-  { 
-    id: 7, 
-    question: "Cosa si intende per 'Rischio Specifico' negli investimenti?", 
-    options: ["Il rischio che l'intero mercato crolli", "Il rischio legato all'andamento di una singola azienda o settore", "Il rischio di cambio valuta", "Il rischio legato all'inflazione"], 
-    correct: 1, 
-    explanation: "È il rischio legato a un singolo titolo. La diversificazione (es. tramite ETF) serve proprio ad abbattere questo rischio specifico." 
-  },
-  { 
-    id: 8, 
-    question: "Quale ruolo ricopre il fondo di emergenza in una pianificazione finanziaria?", 
-    options: ["Generare rendimenti elevati nel breve termine", "Proteggere il capitale investito dalla volatilità di mercato", "Coprire spese impreviste senza liquidare asset strategici", "Accumulare capitale per l'acquisto della prima casa"], 
-    correct: 2, 
-    explanation: "Agisce da cuscinetto finanziario liquido per evitare di dover disinvestire posizioni a lungo termine in momenti di mercato sfavorevoli." 
-  }
-];
+   const questions = [
+    { 
+      id: 1, 
+      question: "Che cos'è l'inflazione e che cosa comporta per i tuoi risparmi?", 
+      options: ["Un aggiustamento tecnico dei tassi di cambio", "L'erosione progressiva del potere d'acquisto reale", "La tassa sulle transazioni finanziarie", "La fluttuazione giornaliera dei mercati azionari"], 
+      correct: 1, 
+      explanation: "L'inflazione riduce il valore reale del denaro nel tempo, rendendo i tuoi risparmi statici (i famosi 'soldi messi sotto il materasso') meno efficaci.\n\nAd esempio, un Big Mac Menu che costa 9,40€ oggi, con un'inflazione media del 2% annuo, costerà circa 23€ nel 2070. Allo stesso modo, una qualsiasi somma di denaro non investita perderebbe oltre il 20% del suo valore in 10 anni.\n\nPer combattere questo fenomeno, la soluzione più efficace è investire. " 
+    },
+    { 
+      id: 2, 
+      question: "Se investi 50.000€ con un rendimento medio del 5% annuo, quanto avrai (all'incirca) dopo 15 anni?", 
+      options: ["75.000€", "87.500€", "104.000€", "60.000€"], 
+      correct: 2, 
+      explanation: "Grazie al fatto che il guadagno ottenuto ogni anno faccia parte del capitale investito per l'anno successivo (fenomeno chiamato 'interesse composto'), il capitale più che raddoppia in circa 15 anni al 5% di rendimento medio.\n\nLa crescita, infatti, non è lineare ma bensì esponenziale (50'000 * 1.05^15 ≈ 103.9k). " 
+    },
+    { 
+      id: 3, 
+      question: "Che cosa conferisce il possesso di un'azione ordinaria (Stock)?", 
+      options: ["Il diritto al rimborso del capitale a scadenza", "Una 'fetta' effettiva della società, con diritti patrimoniali (dividendi) e amministrativi (voto) inclusi", "Un interesse fisso garantito annualmente", "La prelazione sui beni aziendali in caso di fallimento"], 
+      correct: 1, 
+      explanation: "L'azione rappresenta una quota del capitale sociale dell'azienda, conferendo diritti di voto e partecipazione agli utili (dividendi), ma senza garanzia di rimborso come avviene per le obbligazioni.\n\nNota: La risposta corretta è la **1** (La 'fetta' della società), poiché l'opzione 1 nel tuo array originale ('Il diritto al rimborso del capitale a scadenza') descrive un'obbligazione, non un'azione." 
+    },
+    { 
+      id: 4, 
+      question: "Che cos'è un ETF (Exchange Traded Fund)?", 
+      options: ["Un fondo a gestione passiva quotato in borsa", "Un fondo comune a gestione attiva con alti costi", "Un prodotto derivato ad alto rischio", "Un certificato di deposito bancario"], 
+      correct: 0, 
+      explanation: "L'ETF è un prodotto che replica un indice di mercato (gestione passiva) ed è scambiato come un'azione, offrendo diversificazione a costi ridotti.\n\nA titolo di esempio, l'indice più noto è lo S&P 500, che segue l'andamento delle azioni formate dalle 500 aziende statunitensi a maggiore capitalizzazione.\n\nSolitamente, l'ETF è la soluzione migliore per chi inizia ad investire o, in generale, per chi non ha un capitale contenuto a disposizione. " 
+    },
+    { 
+      id: 5, 
+      question: "Basandosi su dati storici, qual è la probabilità di ottenere un rendimento negativo (di perdere soldi) investendo nello S&P 500 per un periodo di 10 anni?", 
+      options: ["Circa il 50%", "Intorno al 10%", "È impossibile (0%)", "Superiore al 30%"], 
+      correct: 1, 
+      explanation: "Storicamente, considerando un orizzonte temporale di 10 anni, la probabilità di perdita si riduce drasticamente a circa il 10%.\n\nEstendendo l'orizzonte a 20 anni, invece, è capitato solo una volta nella storia (1901) che il principale indice americano perdesse di valore.\n\nQuesto dimostra l'importanza cruciale dell'orizzonte temporale negli investimenti azionari." 
+    },
+    { 
+      id: 6, 
+      question: "A parità di somma investita e con un rendimento medio annuo del 7%, di quanto aumenta il capitale nel 2025 se l’investimento parte 20 anni prima invece che 10?", 
+      options: ["È praticamente uguale, perché il tasso di interesse non cambia.", "È superiore di circa il 30/40%", "È superiore di circa il 70%", "È circa il doppio."], 
+      correct: 3, 
+      explanation: "Il tempo è il fattore più potente nell'interesse composto, generando una curva di crescita esponenziale.\n\nCon un rendimento medio annuo del 7% (rendimento medio storico dello S&P 500), un investimento di 10 anni raddoppia il capitale (≈1.97 volte tanto), mentre uno di 20 anni lo quadruplica (≈3.87 volte tanto)!\n\nInvestire per 20 anni invece che per 10 non ti dà quindi soltanto 'il doppio degli interessi', ma il doppio del capitale finale totale (se investissi €10'000, al posto di €19'600 ne avresti €38'600!)." 
+    },
+    { 
+      id: 7, 
+      question: "Cosa si intende per 'Rischio Specifico' negli investimenti?", 
+      options: ["Il rischio che l'intero mercato crolli", "Il rischio legato all'andamento di una singola azienda o settore", "Il rischio di cambio valuta", "Il rischio legato all'inflazione"], 
+      correct: 1, 
+      explanation: "È il rischio legato a un singolo titolo, un'azienda o un settore specifico.\n\nLa diversificazione (es. tramite ETF) serve proprio ad abbattere questo rischio specifico (chiamato anche Rischio Idiosincratico), lasciando attivo solo il Rischio Sistematico (di mercato). " 
+    },
+    { 
+      id: 8, 
+      question: "Quale ruolo ricopre il fondo di emergenza in una pianificazione finanziaria?", 
+      options: ["Generare rendimenti elevati nel breve termine", "Proteggere il capitale investito dalla volatilità di mercato", "Coprire spese impreviste senza liquidare asset strategici", "Accumulare capitale per l'acquisto della prima casa"], 
+      correct: 2, 
+      explanation: "Agisce da cuscinetto finanziario liquido per coprire spese impreviste o periodi di disoccupazione.\n\nQuesto evita di dover disinvestire posizioni a lungo termine (azioni, ETF, etc.) in momenti di mercato sfavorevoli, proteggendo così la tua strategia di investimento principale." 
+    }
+  ];
 
     // ---------- MAIN APP ----------
     function App() {
@@ -601,6 +601,8 @@
       if (currentStep === 'survey') {
         // Opzioni di età in blocchi di 5 anni
         const ageOptions = [
+            // Il primo è vuoto per il placeholder / requisito 'required'
+            '', 
             'Fino a 20 anni',
             '21-25 anni',
             '26-30 anni',
@@ -625,21 +627,21 @@
         
               <form onSubmit={handleSurveySubmit} className="space-y-6">
                 
-                {/* 1. Quanti anni hai? (Pulsanti di selezione - MODIFICATO) */}
+                {/* 1. Quanti anni hai? (Menu a tendina - MODIFICATO) */}
                 <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Quanti anni hai?</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {ageOptions.map((option) => (
-                            <button
-                                key={option}
-                                type="button"
-                                onClick={() => setFormData({...formData, age: option})}
-                                className={`p-3 text-center rounded-xl border-2 font-bold text-sm sm:text-base transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.age === option ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
-                            >
-                                {option}
-                            </button>
+                    <label htmlFor="age" className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Quanti anni hai?</label>
+                    <select
+                        id="age"
+                        required
+                        className="w-full p-4 border-2 border-slate-200 rounded-xl font-medium text-slate-700 focus:outline-none focus:border-blue-500 transition-colors appearance-none bg-white pr-8"
+                        value={formData.age || ''} 
+                        onChange={(e) => setFormData({...formData, age: e.target.value})} 
+                    >
+                        <option value="" disabled hidden>Seleziona la tua fascia d'età</option>
+                        {ageOptions.slice(1).map((option) => (
+                            <option key={option} value={option}>{option}</option>
                         ))}
-                    </div>
+                    </select>
                 </div>
         
                 {/* 2. Quanto riesci a risparmiare ogni mese? (Input numerico/range) */}
@@ -680,7 +682,7 @@
         
                 <button 
                   type="submit" 
-                  // Tutti e tre i campi sono ora richiesti per l'invio (age è ora la stringa)
+                  // Tutti e tre i campi sono ora richiesti per l'invio (age è ora la stringa selezionata dal menu)
                   disabled={!formData.age || !formData.monthlySavings || !formData.interestedInLearning || isSaving}
                   className="w-full bg-blue-600 disabled:bg-slate-300 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all"
                 >
