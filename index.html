@@ -650,94 +650,157 @@
         );
       }
 
-      // RESULTS
-      if (currentStep === 'results') {
-          const maxScore = 8;
-          const nationalAvg = 4;
-          const isGood = score > nationalAvg;
-          
-          // Dati raccolti dal survey (aggiunti)
-          const age = parseInt(formData.age);
-          const monthlySavings = parseFloat(formData.monthlySavings);
-          const interestedInLearning = formData.interestedInLearning === 'yes';
-      
-          // Stima del potenziale di accumulo (Formula di interesse composto per un'annualità: Future Value of an Annuity)
-          // Assumiamo 7% di rendimento annuo (0.07/12) per 15 anni (180 mesi).
-          const rate = 0.07 / 12;
-          const months = 15 * 12; 
-          
-          // FV = P * [((1 + r)^n - 1) / r]
-          const futureValue = monthlySavings * ((Math.pow(1 + rate, months) - 1) / rate);
-          const futureValueFormatted = (futureValue / 1000).toFixed(0); // Arrotondato a migliaia
-      
-          const isYoung = age < 35;
-      
-          return (
-            <div className="min-h-screen bg-slate-50 py-10 px-4 relative">
-              <Logo large={false} />
-              <div className="max-w-2xl mx-auto space-y-8 mt-16 relative z-10">
+// RESULTS
+if (currentStep === 'results') {
+    const maxScore = 8;
+    const nationalAvg = 4;
+    const isGood = score > nationalAvg;
+    
+    // Dati raccolti dal survey
+    
+    // Mappatura della stringa di età (il bin scelto dall'utente)
+    // al valore numerico rappresentativo per i calcoli.
+    let age;
+    switch (formData.age) {
+        case 'Fino a 20 anni':
+            age = 20;
+            break;
+        case '21-25 anni':
+            age = 23;
+            break;
+        case '26-30 anni':
+            age = 28;
+            break;
+        case '31-35 anni':
+            age = 33;
+            break;
+        case '36-40 anni':
+            age = 38;
+            break;
+        case '41-45 anni':
+            age = 43;
+            break;
+        case '46-50 anni':
+            age = 48;
+            break;
+        case '51-55 anni':
+            age = 53;
+            break;
+        case '56-60 anni':
+            age = 58;
+            break;
+        case 'Oltre 60 anni':
+            age = 65;
+            break;
+        default:
+            // Valore di fallback se l'età non è stata selezionata correttamente
+            age = 30; 
+            break;
+    }
+
+    const monthlySavings = parseFloat(formData.monthlySavings);
+    const interestedInLearning = formData.interestedInLearning === 'yes';
+    
+    // Stima del potenziale di accumulo (Formula del Valore Futuro di una Serie di Pagamenti)
+    // $FV = P \times \frac{(1 + r)^n - 1}{r}$
+    // Dove P è il pagamento (monthlySavings), r è il tasso mensile, n sono i mesi
+    const rate = 0.07 / 12;
+    const months = 15 * 12; 
+    
+    const futureValue = monthlySavings * ((Math.pow(1 + rate, months) - 1) / rate);
+
+    const isMillionaire = futureValue >= 1000000;
+    
+    // Se supera il milione, formattiamo con 1 decimale (es. 1.2), altrimenti intero per le migliaia
+    const valFormatted = isMillionaire 
+        ? (futureValue / 1000000).toFixed(1).replace('.0', '') // Rimuove .0 se è cifra tonda
+        : (futureValue / 1000).toFixed(0);
+
+    // Gestione singolare/plurale per i milioni
+    const currencyLabel = isMillionaire
+        ? (valFormatted === '1' ? 'milione di €' : 'milioni di €')
+        : 'mila €';
+    
+    const isYoung = age < 35; // Utilizza l'età numerica mappata
+    
+    return (
+        <div className="min-h-screen bg-slate-50 py-10 px-4 relative">
+            <Logo large={false} />
+            <div className="max-w-2xl mx-auto space-y-8 mt-16 relative z-10">
                 
                 {/* BLOCCO RISULTATO QUIZ */}
                 <div className="bg-white rounded-3xl shadow-xl p-8 text-center border-b-4 border-slate-200">
-                  <h2 className="text-lg text-slate-400 font-bold uppercase tracking-widest mb-4">Il tuo punteggio finale</h2>
-                  <div className="flex justify-center items-baseline gap-2 mb-6">
-                    <span className={`text-8xl font-black ${isGood ? 'text-emerald-500' : 'text-orange-500'} drop-shadow-sm`}>{score}</span>
-                    <span className="text-4xl text-slate-300 font-black">/{maxScore}</span>
-                  </div>
-      
-                  <div className="inline-block bg-slate-100 rounded-xl p-4 mb-6 border border-slate-200">
-                    <p className="text-slate-600 font-medium">Media stimata in Italia: <span className="font-bold text-slate-900">{nationalAvg}/{maxScore}</span></p>
-                    <p className={`font-bold mt-1 ${isGood ? "text-emerald-600" : "text-orange-600"}`}>{isGood ? "Sei sopra la media! 🚀" : "Puoi fare di meglio. 📈"}</p>
-                  </div>
-      
-                  {/* MESSAGGIO DETTAGLIATO BASATO SUL PUNTEGGIO */}
-                  <div className="text-left bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                    <p className="text-blue-900 font-medium leading-relaxed">
-                      {score >= 7 ? "Eccezionale! La tua base di conoscenza è solida. Ora il focus deve essere sull'ottimizzazione e l'azione."
-                        : score >= 4 ? "Buono, ma non basta per far fronte all'inflazione. Hai toccato con mano i tuoi punti deboli. Investire tempo per studiare le basi ti ripagherà."
-                        : "Attenzione! Rimanere all'oscuro della finanza ti costa caro ogni giorno. È essenziale iniziare subito a rafforzare le tue conoscenze per proteggere il tuo futuro."}
-                    </p>
-                  </div>
+                    <h2 className="text-lg text-slate-400 font-bold uppercase tracking-widest mb-4">Il tuo punteggio finale</h2>
+                    <div className="flex justify-center items-baseline gap-2 mb-6">
+                        <span className={`text-8xl font-black ${isGood ? 'text-emerald-500' : 'text-orange-500'} drop-shadow-sm`}>{score}</span>
+                        <span className="text-4xl text-slate-300 font-black">/{maxScore}</span>
+                    </div>
+    
+                    <div className="inline-block bg-slate-100 rounded-xl p-4 mb-6 border border-slate-200">
+                        <p className="text-slate-600 font-medium">Media stimata in Italia: <span className="font-bold text-slate-900">{nationalAvg}/{maxScore}</span></p>
+                        <p className={`font-bold mt-1 ${isGood ? "text-emerald-600" : "text-orange-600"}`}>{isGood ? "Sei sopra la media! 🚀" : "Puoi fare di meglio. 📈"}</p>
+                    </div>
+    
+                    {/* MESSAGGIO DETTAGLIATO BASATO SUL PUNTEGGIO */}
+                    <div className="text-left bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                        <p className="text-blue-900 font-medium leading-relaxed">
+                            {score >= 7 ? "Eccezionale! La tua base di conoscenza è solida. Ora il focus deve essere sull'ottimizzazione e l'azione."
+                                : score >= 4 ? "Buono, ma non basta per far fronte all'inflazione. Hai toccato con mano i tuoi punti deboli. Investire tempo per studiare le basi ti ripagherà."
+                                : "Attenzione! Rimanere all'oscuro della finanza ti costa caro ogni giorno. È essenziale iniziare subito a rafforzare le tue conoscenze per proteggere il tuo futuro."}
+                        </p>
+                    </div>
                 </div>
                 
-                {/* NUOVO BLOCCO PERSONALIZZATO: POTENZIALE E CHIAMATA ALL'AZIONE */}
+                {/* BLOCCO PERSONALIZZATO: POTENZIALE + CHI SIAMO + CTA */}
                 <div className="bg-slate-900 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden text-center border-b-4 border-black">
-                  <div className="absolute -top-10 -right-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
-                  <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
-                  
-                  <h3 className="text-3xl font-black mb-4 relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-emerald-300">
-                    Il Tuo Potenziale Finanziario
-                  </h3>
-                  
-                  <p className="text-slate-300 text-lg mb-4 relative z-10">
-                    Se investi regolarmente i tuoi <span className="text-emerald-300 font-bold">{monthlySavings}€</span> al mese con un rendimento medio del 7%, potresti trasformarli in circa <span className="text-emerald-300 font-bold">{futureValueFormatted} mila €</span> in 15 anni. Questo è il potere dell'interesse composto.
-                  </p>
-      
-                  <h4 className="text-xl font-bold mt-6 mb-4 relative z-10">
-                      {isYoung ? 'Sei giovane, il tempo è il tuo alleato più grande! ⏳' : 'Non è mai troppo tardi. Inizia ora!'}
-                  </h4>
-                  
-                  <p className="text-slate-300 text-lg mb-6 relative z-10">
-                    {interestedInLearning 
-                      ? "Hai espresso interesse nell'apprendimento. Perfetto, è il primo passo!"
-                      : "Non ti interessa imparare? Sappi che l'inflazione non si ferma. Ripensaci, il tuo futuro dipende da queste basi."
-                    }
-                  </p>
-                  
-                  {/* CTA FINALE */}
-                  <a 
-                    href="[INSERISCI QUI IL LINK AL TUO CANALE INSTAGRAM]" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="inline-block bg-emerald-500 text-white font-black py-3 px-6 rounded-2xl shadow-lg transition-transform hover:scale-105 relative z-10 uppercase tracking-widest"
-                  >
-                    Scopri i prossimi passi su Instagram 📸
-                  </a>
+                    <div className="absolute -top-10 -right-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
+                    <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+                    
+                    {/* --- SEZIONE POTENZIALE --- */}
+                    <h3 className="text-3xl font-black mb-4 relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-emerald-300">
+                        Il Tuo Potenziale Finanziario
+                    </h3>
+                    
+                    <p className="text-slate-300 text-lg mb-4 relative z-10">
+                        Se investi regolarmente i tuoi <span className="text-emerald-300 font-bold">{monthlySavings}€</span> al mese con un rendimento medio del 7%, potresti trasformarli in circa <span className="text-emerald-300 font-bold">{valFormatted} {currencyLabel}</span> in 15 anni. Questo è il potere dell'interesse composto.
+                    </p>
+    
+                    <h4 className="text-xl font-bold mt-6 mb-6 relative z-10">
+                        {isYoung ? 'Sei giovane, il tempo è il tuo alleato più grande! ⏳' : 'Non è mai troppo tardi. Inizia ora!'}
+                    </h4>
+
+                    {/* --- SEZIONE AUTORI (NUOVA) --- */}
+                    <div className="relative z-10 bg-slate-800/50 rounded-2xl p-6 mb-8 text-left border border-slate-700">
+                        <h5 className="text-slate-200 font-bold text-sm uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <span className="text-xl">👋</span> Chi siamo
+                        </h5>
+                        <p className="text-slate-400 text-sm leading-relaxed">
+                            Siamo <span className="text-white font-semibold">Luca e Paolo</span>, due Ingegneri Matematici del Politecnico di Milano. 🎓
+                        </p>
+                        <p className="text-slate-400 text-sm leading-relaxed mt-2">
+                            Da 5 anni lavoriamo a Zurigo in <span className="text-white font-semibold">Google</span> e <span className="text-white font-semibold">Swissquote</span>. Abbiamo creato questo progetto con una missione precisa: rendere l'educazione finanziaria accessibile a tutti. 🇮🇹
+                        </p>
+                    </div>
+                    
+                    {/* --- SEZIONE CTA APP E INSTAGRAM (AGGIORNATA) --- */}
+                    <p className="text-slate-300 text-lg mb-6 relative z-10 px-2">
+                        Stiamo costruendo l'app definitiva per la tua educazione finanziaria. Nel frattempo, seguici su Instagram per <span className="text-emerald-300 font-medium">consigli quotidiani</span> e aggiornamenti sul lancio!
+                    </p>
+                    
+                    <a 
+                        href="[INSERISCI QUI IL LINK AL TUO CANALE INSTAGRAM]" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-block bg-emerald-500 hover:bg-emerald-400 text-white font-black py-4 px-8 rounded-2xl shadow-lg shadow-emerald-900/20 transition-all hover:scale-105 hover:shadow-emerald-500/20 relative z-10 uppercase tracking-widest text-sm sm:text-base"
+                    >
+                        Unisciti alla community 📸
+                    </a>
+
                 </div>
-              </div>
             </div>
-          );
-      }
+        </div>
+    );
+}
 
       return <div>Stato sconosciuto</div>;
     }
