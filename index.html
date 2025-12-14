@@ -384,8 +384,52 @@
         e.preventDefault();
         setIsSaving(true);
 
+        // --- Logica di mappatura dell'età da stringa a valore medio numerico ---
+        let ageValue;
+        const ageBin = formData.age;
+        
+        switch (ageBin) {
+            case 'Fino a 20 anni':
+                ageValue = 20;
+                break;
+            case '21-25 anni':
+                ageValue = 23;
+                break;
+            case '26-30 anni':
+                ageValue = 28;
+                break;
+            case '31-35 anni':
+                ageValue = 33;
+                break;
+            case '36-40 anni':
+                ageValue = 38;
+                break;
+            case '41-45 anni':
+                ageValue = 43;
+                break;
+            case '46-50 anni':
+                ageValue = 48;
+                break;
+            case '51-55 anni':
+                ageValue = 53;
+                break;
+            case '56-60 anni':
+                ageValue = 58;
+                break;
+            case 'Oltre 60 anni':
+                ageValue = 65;
+                break;
+            default:
+                ageValue = 30; // Fallback
+                break;
+        }
+
+        const finalAgeForSave = ageValue;
+        
         const resultData = {
           ...formData,
+          age: ageBin, // Salviamo la stringa nel 'leads'
+          ageValue: finalAgeForSave, // Salviamo il valore numerico mappato nel 'leads'
           score,
           total: questions.length,
           date: new Date().toISOString(),
@@ -400,12 +444,13 @@
             
             // mark session completed (e salva i dati finali anche sulla sessione)
             const finalSessionPayload = {
-                finalScore: score,
-                age: formData.age,
-                monthlySavings: formData.monthlySavings,
-                interestedInLearning: formData.interestedInLearning,
-                answers: userAnswers
-            };
+                finalScore: score,
+                age: ageBin,
+                ageValue: finalAgeForSave,
+                monthlySavings: formData.monthlySavings,
+                interestedInLearning: formData.interestedInLearning,
+                answers: userAnswers
+            };
             await markCompletedOnServer(sessionId, finalSessionPayload);
             
             console.info('Dati finali salvati su leads e sessione marcata come completata.');
@@ -454,16 +499,6 @@
 
       // INTRO
       if (currentStep === 'intro') {
-        // const savedProgress = loadProgressLocal();
-        // Calcolo progressi più accurato
-        // let progressText = null;
-        // if (savedProgress) {
-        //     if (savedProgress.currentStep === 'survey') {
-        //         progressText = "Sei arrivato al form finale!";
-        //     } else if (typeof savedProgress.currentQuestionIndex === 'number') {
-        //         progressText = `Domanda ${savedProgress.currentQuestionIndex + 1}`;
-        //     }
-        // }
         
         return (
           <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -478,16 +513,8 @@
                 <p className="text-emerald-300">Scopri il tuo livello in 3 minuti. Impara la lingua della finanza.</p>
               </div>
 
-              {/* {progressText ? (
-                <div className="mb-4 p-4 bg-blue-500/20 text-blue-200 rounded-xl border border-blue-500/50 text-center font-medium">
-                  Hai dei progressi salvati (Sei a: {progressText}).
-                </div>
-              ) : null}
-              */}
-
               <button onClick={() => setCurrentStep('quiz')}
                       className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xl py-5 px-8 rounded-2xl transition-all transform hover:scale-[1.02] hover:shadow-emerald-500/50 shadow-lg flex items-center justify-center gap-3 border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1">
-                {/* {progressText ? "RIPRENDI IL QUIZ" : "INIZIA ORA"} <ArrowRight size={20} /> */}
                 INIZIA ORA <ArrowRight size={20} />
               </button>
             </div>
@@ -572,6 +599,20 @@
       }
 
       if (currentStep === 'survey') {
+        // Opzioni di età in blocchi di 5 anni
+        const ageOptions = [
+            'Fino a 20 anni',
+            '21-25 anni',
+            '26-30 anni',
+            '31-35 anni',
+            '36-40 anni',
+            '41-45 anni',
+            '46-50 anni',
+            '51-55 anni',
+            '56-60 anni',
+            'Oltre 60 anni',
+        ];
+
         return (
           <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
             <Logo large={false} />
@@ -581,24 +622,26 @@
                 <h2 className="text-2xl font-black text-slate-800">Ci siamo quasi! 🚀</h2>
                 <p className="text-slate-500 font-medium mt-2">Ultime info per calcolare il tuo profilo di partenza.</p>
               </div>
-      
+        
               <form onSubmit={handleSurveySubmit} className="space-y-6">
                 
-                {/* 1. Quanti anni hai? (Input numerico) */}
+                {/* 1. Quanti anni hai? (Pulsanti di selezione - MODIFICATO) */}
                 <div>
-                  <label htmlFor="age" className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Quanti anni hai?</label>
-                  <input 
-                    id="age"
-                    type="number"
-                    required
-                    min="18"
-                    className="w-full p-4 border-2 border-slate-200 rounded-xl font-medium focus:outline-none focus:border-blue-500 transition-colors"
-                    value={formData.age || ''} 
-                    onChange={(e) => setFormData({...formData, age: e.target.value})} 
-                    placeholder="es. 28" 
-                  />
+                    <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Quanti anni hai?</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {ageOptions.map((option) => (
+                            <button
+                                key={option}
+                                type="button"
+                                onClick={() => setFormData({...formData, age: option})}
+                                className={`p-3 text-center rounded-xl border-2 font-bold text-sm sm:text-base transition-all border-b-4 active:border-b-2 active:translate-y-0.5 ${formData.age === option ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+                            >
+                                {option}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-      
+        
                 {/* 2. Quanto riesci a risparmiare ogni mese? (Input numerico/range) */}
                 <div>
                   <label htmlFor="monthlySavings" className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Risparmio mensile (in €)</label>
@@ -613,7 +656,7 @@
                     placeholder="es. 150" 
                   />
                 </div>
-      
+        
                 {/* 3. Sei interessato a imparare di più sulla finanza personale? (Sì/No) */}
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Vuoi imparare di più sulla finanza personale?</label>
@@ -634,10 +677,10 @@
                     </button>
                   </div>
                 </div>
-      
+        
                 <button 
                   type="submit" 
-                  // Tutti e tre i campi sono ora richiesti per l'invio
+                  // Tutti e tre i campi sono ora richiesti per l'invio (age è ora la stringa)
                   disabled={!formData.age || !formData.monthlySavings || !formData.interestedInLearning || isSaving}
                   className="w-full bg-blue-600 disabled:bg-slate-300 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all"
                 >
@@ -656,10 +699,7 @@ if (currentStep === 'results') {
     const nationalAvg = 4;
     const isGood = score > nationalAvg;
     
-    // Dati raccolti dal survey
-    
-    // Mappatura della stringa di età (il bin scelto dall'utente)
-    // al valore numerico rappresentativo per i calcoli.
+    // --- Logica di mappatura dell'età da stringa a valore medio numerico per i calcoli ---
     let age;
     switch (formData.age) {
         case 'Fino a 20 anni':
@@ -705,7 +745,7 @@ if (currentStep === 'results') {
     // $FV = P \times \frac{(1 + r)^n - 1}{r}$
     // Dove P è il pagamento (monthlySavings), r è il tasso mensile, n sono i mesi
     const rate = 0.07 / 12;
-    const months = 15 * 12; 
+    const months = 15 * 12; // 15 anni di accumulo
     
     const futureValue = monthlySavings * ((Math.pow(1 + rate, months) - 1) / rate);
 
@@ -735,12 +775,12 @@ if (currentStep === 'results') {
                         <span className={`text-8xl font-black ${isGood ? 'text-emerald-500' : 'text-orange-500'} drop-shadow-sm`}>{score}</span>
                         <span className="text-4xl text-slate-300 font-black">/{maxScore}</span>
                     </div>
-    
+
                     <div className="inline-block bg-slate-100 rounded-xl p-4 mb-6 border border-slate-200">
                         <p className="text-slate-600 font-medium">Media stimata in Italia: <span className="font-bold text-slate-900">{nationalAvg}/{maxScore}</span></p>
                         <p className={`font-bold mt-1 ${isGood ? "text-emerald-600" : "text-orange-600"}`}>{isGood ? "Sei sopra la media! 🚀" : "Puoi fare di meglio. 📈"}</p>
                     </div>
-    
+
                     {/* MESSAGGIO DETTAGLIATO BASATO SUL PUNTEGGIO */}
                     <div className="text-left bg-blue-50 p-6 rounded-2xl border border-blue-100">
                         <p className="text-blue-900 font-medium leading-relaxed">
@@ -764,7 +804,7 @@ if (currentStep === 'results') {
                     <p className="text-slate-300 text-lg mb-4 relative z-10">
                         Se investi regolarmente i tuoi <span className="text-emerald-300 font-bold">{monthlySavings}€</span> al mese con un rendimento medio del 7%, potresti trasformarli in circa <span className="text-emerald-300 font-bold">{valFormatted} {currencyLabel}</span> in 15 anni. Questo è il potere dell'interesse composto.
                     </p>
-    
+
                     <h4 className="text-xl font-bold mt-6 mb-6 relative z-10">
                         {isYoung ? 'Sei giovane, il tempo è il tuo alleato più grande! ⏳' : 'Non è mai troppo tardi. Inizia ora!'}
                     </h4>
